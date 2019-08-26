@@ -3,7 +3,7 @@
 # ScratchVerifier
 Verify Scratch accounts as genuine, for use in authorization or identification.
 
-## Slideshow
+## Video
 
 <video src="media/slideshow.mp4" style="
     height: 100%;
