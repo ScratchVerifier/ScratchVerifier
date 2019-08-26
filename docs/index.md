@@ -9,3 +9,9 @@ Verify Scratch accounts as genuine, for use in authorization or identification.
     height: 100%;
     width: 100%;
 " controls="" autoplay=""></video>
+
+## Credits
+
+[@smileycreations15](https://github.com/smileycreations15) for the slideshow and website and logo,
+[@VFDan](https://github.com/VFDan) for the favicon,
+[@kenny2github](https://github.com/kenny2github) for the idea and motto.
