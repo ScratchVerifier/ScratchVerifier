@@ -5,4 +5,7 @@ Verify Scratch accounts as genuine, for use in authorization or identification.
 
 ## Slideshow
 
-<video src="/media/slideshow.mp4"></video>
+<video src="media/slideshow.mp4" style="
+    height: 100%;
+    width: 100%;
+" controls="" autoplay=""></video>
