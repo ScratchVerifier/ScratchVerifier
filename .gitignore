@@ -1,1 +1,3 @@
-database.sqlite3
+scratchverifier.db
+__pycache__/
+*.pyc
