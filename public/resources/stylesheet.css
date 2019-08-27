@@ -41,3 +41,34 @@ body {
 	font-family: Consolas, Arial, Sans-Serif;
 	text-align: center;
 	}
+
+.LoginPage_Content {
+	text-align: center;
+	font-family: consolas, arial, sans-serif
+	}
+	
+#Username {
+	width: 50%;
+	padding:12px 20px;
+	border:2px solid white;
+  	border-radius:4px;
+	background-color:#F0F0F0;
+	}
+	
+#submit {
+	background-color: #fffcf2;
+	font-size: 16px;
+	padding: 12px 1%;
+	border-radius: 12px;
+	width: 10%;
+	border:2px solid black;
+	margin-left: 5px;
+	}
+				
+#submit:hover {
+  	background-color: #fff7db;
+	}
+			
+#submit:active {
+  	background-color: #fff7db;
+	}
