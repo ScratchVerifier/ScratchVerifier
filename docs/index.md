@@ -1,4 +1,4 @@
-<link rel="icon" href="../public/favicon.ico">
+<link rel="icon" href="favicon.ico">
 ![Banner](https://u.cubeupload.com/smileycreations15/V732dJ.png)
 
 # ScratchVerifier
