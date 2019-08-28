@@ -33,3 +33,10 @@ class User(metaclass=Response):
     client_id = int
     token = str
     username = str
+
+class Log(metaclass=Response):
+    log_id = int
+    client_id = int
+    username = str
+    log_time = int
+    log_type = int

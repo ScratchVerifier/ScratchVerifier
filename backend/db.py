@@ -122,6 +122,9 @@ WHERE session_id=?', (session_id,))
         await self.db.execute('INSERT INTO scratchverifier_usage (client_id, \
 code, username, expiry) VALUES (?, ?, ?, ?)', (client_id, code, username,
                                int(time.time() + 1800)))
+        await self.db.execute('INSERT INTO scratchverifier_logs (client_id, \
+username, log_time, log_type) VALUES (?, ?, ?, ?)', (client_id, username,
+                                                     int(time.time()), 1))
         return code
 
     async def get_code(self, client_id, username):
@@ -131,10 +134,43 @@ WHERE client_id=? AND username=?', (client_id, username))
         if row is None:
             return None
         if time.time() > row['expiry']:
-            await self.end_verification(client_id, username)
+            await self.end_verification(client_id, username, False)
             return None
         return row['code']
 
-    async def end_verification(self, client_id, username):
+    async def end_verification(self, client_id, username, succ=True):
         await self.db.execute('DELETE FROM scratchverifier_usage WHERE \
 client_id=? AND username=?', (client_id, username))
+        await self.db.execute('INSERT INTO scratchverifier_logs (client_id, \
+username, log_time, log_type) \
+VALUES (?, ?, ?, ?)', (client_id, username, int(time.time()), 3 - succ))
+
+    ### TABLE: logs solely ###
+
+    async def get_logs(self, limit=100, **params):
+        query = 'SELECT * FROM scratchverifier_logs WHERE limit=:limit'
+        if 'start' in params:
+            query += ' AND log_id<:start'
+        if 'before' in params:
+            query += ' AND log_time<=:before'
+        if 'end' in params:
+            query += ' AND log_id>:end'
+        if 'after' in params:
+            query += ' AND log_time>=:after'
+        if 'client_id' in params:
+            query += ' AND client_id=:client_id'
+        if 'username' in params:
+            query += ' AND username=:username'
+        if 'type' in params:
+            query += ' AND log_type=:type'
+        await self.db.execute(query, {'limit': limit, **params})
+        rows = await self.db.fetchall()
+        return [dict(i) for i in rows]
+
+    async def get_log(self, log_id):
+        await self.db.execute('SELECT * FROM scratchverifier_logs \
+WHERE log_id=?', (log_id,))
+        row = await self.db.fetchone()
+        if row is None:
+            return None
+        return dict(row)

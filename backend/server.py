@@ -12,6 +12,7 @@ from responses import *
 DEFAULT_PORT = 8888
 COMMENTS_API = 'https://scratch.mit.edu/site-api/comments/user/{}/\
 ?page=1&salt={}'
+USERNAME_REGEX = re.compile('[A-Za-z0-9_-]{3,20}')
 COMMENTS_REGEX = re.compile(r"""<div id="comments-\d+" class="comment +" data-comment-id="\d+">.*?<div class="actions-wrap">.*?<div class="name">\s+<a href="/users/([_a-zA-Z0-9-]+)">\1</a>\s+</div>\s+<div class="content">(.*?)</div>""", re.S)
 
 class Server:
@@ -26,6 +27,8 @@ class Server:
             web.put('/session/{session}', self.put_user),
             web.patch('/session/{session}', self.reset_token),
             web.delete('/session/{session}', self.del_user),
+            web.get('/usage', self.logs),
+            web.get('/usage/{logid}', self.log),
             web.post('/webhook', self.gh_hook),
             web.get('/site/{path:.*}', self.file_handler),
             web.get('/site/', self.file_handler),
@@ -49,6 +52,8 @@ class Server:
 
     async def _wakeup(self):
         files = glob(os.path.join(os.path.dirname(__file__), '*.py'))
+        files.append(os.path.join(os.path.dirname(__file__),
+                                  'sql', 'startup.sql'))
         files = {f: os.path.getmtime(f) for f in files}
         while 1:
             try:
@@ -80,7 +85,7 @@ class Server:
 
     async def check_username(self, request):
         username = request.match_info.get('username', None)
-        if not username or not 3 <= len(username) <= 20:
+        if not re.match(USERNAME_REGEX, username):
             raise web.HTTPBadRequest()
         async with self.session.get(USERS_API.format(username)) as resp:
             if resp.status != 200:
@@ -105,9 +110,9 @@ class Server:
             if resp.status != 200:
                 raise web.HTTPNotFound() #likely banned or something
             data = await resp.text()
-        await self.db.end_verification(client_id, username)
         data = data.strip()
         if not data:
+            await self.db.end_verification(client_id, username, False)
             return False #no comments at all, failed
         for m in re.finditer(COMMENTS_REGEX, data):
             if m.group(1).casefold() != username:
@@ -115,7 +120,9 @@ class Server:
             if m.group(2).strip() == code:
                 break
         else:
+            await self.db.end_verification(client_id, username, False)
             return False #nothing was the code, failed
+        await self.db.end_verification(client_id, username, True)
         return True
 
     async def verified(self, request):
@@ -180,17 +187,33 @@ class Server:
         await self.db.del_client(session_id)
         raise web.HTTPNoContent()
 
+    async def logs(self, request):
+        if request.query.get('limit', 100) > 500:
+            raise web.HTTPForbidden()
+        return web.json_response(await self.db.get_logs(**request.query))
+
+    async def log(self, request):
+        log_id = request.match_info.get('logid', None)
+        try:
+            log_id = int(log_id)
+        except ValueError:
+            raise web.HTTPNotFound() from None
+        data = await self.db.get_log(log_id)
+        if data is None:
+            raise web.HTTPNotFound()
+        return web.json_response(data)
+
     async def gh_hook(self, request):
         if 'X-Hub-Signature' not in request.headers:
-            raise HTTPUnauthorized()
+            raise web.HTTPUnauthorized()
         digest = hmac.new(self.hook_secret, await request.read(), 'sha1')
         digest = digest.hexdigest()
         if not hmac.compare_digest(digest, request.headers['X-Hub-Signature']):
-            raise HTTPUnauthorized()
+            raise web.HTTPUnauthorized()
         os.system('cd {} && git pull --rebase origin'.format(
             os.path.dirname(__file__)
         ))
-        raise HTTPNoContent()
+        raise web.HTTPNoContent()
 
     async def file_handler(self, request):
         WEB_ROOT = os.path.join(os.path.dirname(os.path.dirname(__file__)),
