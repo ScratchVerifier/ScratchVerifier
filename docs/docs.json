@@ -1,0 +1,526 @@
+{
+  "index.html": [
+    {
+      "type": "intro",
+      "title": "Welcome to ScratchVerifier",
+      "paragraphs": ["Verify Scratch accounts as genuine, for use in authorization or identification."]
+    },
+    {
+      "type": "section",
+      "heading": "Introduction",
+      "paragraphs": [
+        "You've found the documentation for ScratchVerifier's API! These pages show you how to use ScratchVerifier for anything you might be making that needs to know who somebody is on Scratch.",
+        "This documentation is <a href=\"https://github.com/ScratchVerifier/ScratchVerifier/tree/develop/docs\">on GitHub</a> so feel free to submit an issue for any corrections or improvements!"
+      ]
+    },
+    {
+      "type": "section",
+      "heading": "Bugs",
+      "paragraphs": [
+        "If you find something that you think is a bug, report it <a href=\"https://github.com/ScratchVerifier/ScratchVerifier\">on GitHub</a> and we'll be sure to check it out."
+      ]
+    },
+    {
+      "type": "section",
+      "heading": "Getting Started",
+      "paragraphs": [
+        "See the <a href=\"usage.html\">usage walkthrough</a> to get started!"
+      ]
+    }
+  ],
+  "reference.html": [
+    {
+      "type": "intro",
+      "title": "API Reference",
+      "paragraphs": [
+        "The ScratchVerifier API is a HTTP/REST API for all operations.",
+        "<b>API Base URL</b>: <a href=\"http://scratchverifier.ddns.net\">http://scratchverifier.ddns.net</a>"
+      ]
+    },
+    {
+      "type": "section",
+      "heading": "Authorization",
+      "paragraphs": [
+        "Authorization is done using <a href=\"https://tools.ietf.org/html/rfc7617\">Basic HTTP Authorization</a>, using your client ID as the username and token as the password.",
+        {
+          "type": "headedpre",
+          "heading": "Example Authorization Header",
+          "text": "Authorization: Basic MTAxMTQ3NjQ6NDY5MDI1YzYxM2RhNDMwYmEzMTE0NzIwY...=="
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "heading": "API Endpoints",
+      "paragraphs": [
+        "The simplicity of this API is such that there are only two total endpoints for its ultimate purpose."
+      ]
+    },
+    {
+      "type": "endpoint",
+      "name": "Start Verification",
+      "method": "PUT",
+      "path": "/verify/{username}",
+      "params": {
+        "username": {
+          "type": "string",
+          "desc": "The username to verify",
+          "query": false
+        }
+      },
+      "http": {
+        "200 OK": "returns <a href=\"#verification-object\">Verification</a> object",
+        "400 Bad Request": "username is invalid by Scratch rules",
+        "401 Unauthorized": "missing/invalid <a href=\"#authorization\">authorization</a>",
+        "404 Not Found": "username 404ed on Scratch API"
+      },
+      "auth": true,
+      "returns": {
+        "type": "Verification",
+        "code": "EJAAFcffGJeFDCGdJB...",
+        "username": "ScratchUsername"
+      }
+    },
+    {
+      "type": "endpoint",
+      "name": "Finish Verification",
+      "method": "POST",
+      "path": "/verify/{username}",
+      "params": {
+        "username": {
+          "type": "string",
+          "desc": "The username to verify",
+          "query": false
+        }
+      },
+      "http": {
+        "204 No Content": "verification successful",
+        "400 Bad Request": "username is invalid by Scratch rules",
+        "401 Unauthorized": "missing/invalid <a href=\"#authorization\">authorization</a>",
+        "404 Not Found": "username 404ed on Scratch API"
+      },
+      "auth": true,
+      "returns": null
+    },
+    {
+      "type": "section",
+      "heading": "API Registration Endpoints",
+      "paragraphs": [
+        "These endpoints are to do with registering a client with the API."
+      ]
+    },
+    {
+      "type": "endpoint",
+      "name": "Start Logging In",
+      "method": "POST",
+      "path": "/users/{username}/login",
+      "params": {
+        "username": {
+          "type": "string",
+          "desc": "The username to log in with",
+          "query": false
+        }
+      },
+      "http": {
+        "200 OK": "returns <a href=\"#verification-object\">Verification</a> object",
+        "400 Bad Request": "username is invalid by Scratch rules",
+        "404 Not Found": "username 404ed on Scratch API"
+      },
+      "returns": {
+        "type": "Verification",
+        "code": "EJAAFcffGJeFDCGdJB...",
+        "username": "ScratchUsername"
+      }
+    },
+    {
+      "type": "endpoint",
+      "name": "Finish Logging In",
+      "method": "POST",
+      "path": "/users/{username}/finish-login",
+      "params": {
+        "username": {
+          "type": "string",
+          "desc": "The username to log in with",
+          "query": false
+        }
+      },
+      "http": {
+        "200 OK": "returns <a href=\"#session-object\">Session</a> object",
+        "400 Bad Request": "username is invalid by Scratch rules",
+        "401 Unauthorized": "login failed",
+        "404 Not Found": "username 404ed on Scratch API"
+      },
+      "returns": {
+        "type": "Session",
+        "session": 1234567890
+      }
+    },
+    {
+      "type": "endpoint",
+      "name": "Get Client Info",
+      "method": "GET",
+      "path": "/session/{session ID}",
+      "params": {
+        "session ID": {
+          "type": "string",
+          "desc": "Session ID returned by <a href=\"#finish-logging-in-endpoint\">Finish Logging In</a> endpoint",
+          "query": false
+        }
+      },
+      "http": {
+        "200 OK": "returns <a href=\"#user-object\">User</a> object",
+        "401 Unauthorized": "<code>session ID</code> invalid or not specified",
+        "404 Not Found": "this user is not registered with the API yet"
+      },
+      "returns": {
+        "type": "User",
+        "client_id": 10114764,
+        "token": "dd9410f80ba0...",
+        "username": "ScratchUsername"
+      }
+    },
+    {
+      "type": "endpoint",
+      "name": "Create Client",
+      "method": "PUT",
+      "path": "/session/{session ID}",
+      "params": {
+        "session ID": {
+          "type": "string",
+          "desc": "Session ID returned by <a href=\"#finish-logging-in-endpoint\">Finish Logging In</a> endpoint",
+          "query": false
+        }
+      },
+      "http": {
+        "200 OK": "returns new <a href=\"#user-object\">User</a> object",
+        "401 Unauthorized": "<code>session ID</code> invalid or not specified",
+        "409 Conflict": "this user is already registered with the API"
+      },
+      "returns": {
+        "type": "User",
+        "client_id": 10114764,
+        "token": "dd9410f80ba0...",
+        "username": "ScratchUsername"
+      }
+    },
+    {
+      "type": "endpoint",
+      "name": "Reset Token",
+      "method": "PATCH",
+      "path": "/session/{session ID}",
+      "params": {
+        "session ID": {
+          "type": "string",
+          "desc": "Session ID returned by <a href=\"#finish-logging-in-endpoint\">Finish Logging In</a> endpoint",
+          "query": false
+        }
+      },
+      "http": {
+        "200 OK": "returns updated <a href=\"#user-object\">User</a> object",
+        "401 Unauthorized": "<code>session ID</code> invalid or not specified"
+      },
+      "returns": {
+        "type": "User",
+        "client_id": 10114764,
+        "token": "dd9410f80ba0...",
+        "username": "ScratchUsername"
+      }
+    },
+    {
+      "type": "endpoint",
+      "name": "Delete Client",
+      "method": "DELETE",
+      "path": "/session/{session ID}",
+      "params": {
+        "session ID": {
+          "type": "string",
+          "desc": "Session ID returned by <a href=\"#finish-logging-in-endpoint\">Finish Logging In</a> endpoint",
+          "query": false
+        }
+      },
+      "http": {
+        "204 No Content": "client was successfully deleted",
+        "401 Unauthorized": "<code>session ID</code> invalid or not specified"
+      },
+      "returns": null
+    },
+    {
+      "type": "section",
+      "heading": "API Usage Endpoints",
+      "paragraphs": [
+        "These endpoints fetch API usage logs."
+      ]
+    },
+    {
+      "type": "endpoint",
+      "name": "Get Usage Logs",
+      "method": "GET",
+      "path": "/usage",
+      "params": {
+        "limit=n": {
+          "type": "integer",
+          "desc": "Return at most <code>n</code> logs. <code>n</code> cannot be greater than 500",
+          "query": true
+        },
+        "start=n": {
+          "type": "integer",
+          "desc": "Return logs that happened before (not including) the log with ID <code>n</code>. Usually used for getting the next page of logs. This does not have to be a valid ID (though it usually is)",
+          "query": true
+        },
+        "before=n": {
+          "type": "integer",
+          "desc": "Return logs that happened before (and including) the Unix epoch time <code>n</code>",
+          "query": true
+        },
+        "end=n": {
+          "type": "integer",
+          "desc": "Return logs that happened after (not including) the log with ID <code>n</code>",
+          "query": true
+        },
+        "after=n": {
+          "type": "integer",
+          "desc": "Return logs that happened after (and including) the Unix epoch time <code>n</code>. Usually used to limit returned logs by time",
+          "query": true
+        },
+        "client_id=n": {
+          "type": "integer",
+          "desc": "Only return logs with the client ID <code>n</code>",
+          "query": true
+        },
+        "username=name": {
+          "type": "string",
+          "desc": "Only return logs with the username <code>name</code>",
+          "query": true
+        },
+        "type=n": {
+          "type": "integer",
+          "desc": "Only return logs with the <a href=\"#log-types\">log type</a> <code>n</code>",
+          "query": true
+        }
+      },
+      "http": {
+        "200 OK": "returns list of <a href=\"#log-object\">Log</a> objects",
+        "403 Forbidden": "<code>limit</code> was greater than 500"
+      },
+      "returns": {
+        "type": "Log[]",
+        "log_id": 123,
+        "client_id": 1234567890,
+        "username": "ScratchUsername",
+        "log_time": "1566974952",
+        "log_type": 1
+      }
+    },
+    {
+      "type": "endpoint",
+      "name": "Get Usage Log",
+      "method": "GET",
+      "path": "/usage/{log ID}",
+      "params": {
+        "log ID": {
+          "type": "integer",
+          "desc": "ID of log entry to fetch",
+          "query": false
+        }
+      },
+      "http": {
+        "200 OK": "returns single <a href=\"#log-object\">Log</a> object",
+        "404 Not Found": "no log with such ID"
+      },
+      "returns": {
+        "type": "Log",
+        "log_id": 123,
+        "client_id": 1234567890,
+        "username": "ScratchUsername",
+        "log_time": "1566974952",
+        "log_type": 1
+      }
+    },
+    {
+      "type": "section",
+      "heading": "Objects",
+      "paragraphs": [
+        "Various endpoints have defined return types. They are documented below."
+      ]
+    },
+    {
+      "type": "object",
+      "name": "Verification",
+      "desc": "Holds data related to verifying a user on Scratch.",
+      "fields": {
+        "code": {"type": "string", "desc": "verification code to post"},
+        "username": {"type": "string", "desc": "username being verified"}
+      }
+    },
+    {
+      "type": "object",
+      "name": "Session",
+      "desc": "Holds the session ID to use in other API registration endpoints.",
+      "fields": {
+        "session": {"type": "integer", "desc": "session ID to use"}
+      }
+    },
+    {
+      "type": "object",
+      "name": "User",
+      "desc": "Holds data that a client needs to access the API.",
+      "fields": {
+        "client_id": {"type": "integer", "desc": "client ID"},
+        "token": {"type": "string", "desc": "API token for client"},
+        "username": {"type": "string", "desc": "username of client"}
+      }
+    },
+    {
+      "type": "object",
+      "name": "Log",
+      "desc": "Holds log data for a verification.",
+      "fields": {
+        "log_id": {"type": "integer", "desc": "log ID"},
+        "client_id": {"type": "integer", "desc": "client ID responsible for this log"},
+        "username": {"type": "string", "desc": "username being verified"},
+        "log_time": {"type": "integer", "desc": "Unix epoch time of log"},
+        "log_type": {"type": "integer", "desc": "<a href=\"#log-types\">log type</a>"}
+      }
+    },
+    {
+      "type": "section",
+      "heading": "Log Types",
+      "paragraphs": [
+        "Logs can have three types:",
+        {"type": "ul", "items": [
+          "<code>1</code>: verification started",
+          "<code>2</code>: verification succeeded",
+          "<code>3</code>: verification failed"
+        ]}
+      ]
+    }
+  ],
+  "usage.html": [
+    {
+      "type": "intro",
+      "title": "ScratchVerifier Usage",
+      "paragraphs": ["This page contains a walkthrough for using this API."]
+    },
+    {
+      "type": "section",
+      "heading": "Basic Walkthrough",
+      "paragraphs": [
+        "The API root URL is <a href=\"http://scratchverifier.ddns.net\">http://scratchverifier.ddns.net</a>",
+        "After <a href=\"registration.html\"><b>registering</b></a>, here's how to use this API:",
+        {"type": "ol", "items": [
+          "Send an HTTP <span class=\"method\">PUT</span> request to <code>/verify/<span class=\"param\">{username}</span></code> with the client ID and token you obtained as HTTP Basic authorization",
+          "The API will send you a <a href=\"reference.html#verification-object\">Verification</a> object containing a code",
+          "Have your client post that verification code on <i>their own profile comments</i>",
+          "Send an HTTP <span class=\"method\">POST</span> request to <code>/verify/<span class=\"param\">{username}</span></code>",
+          "If your client is verified, you should receive a 204 No Content response. Done!"
+        ]}
+      ]
+    }
+  ],
+  "registration.html": [
+    {
+      "type": "intro",
+      "title": "ScratchVerifier Registration",
+      "paragraphs": ["This page contains walkthroughs for registering/handling your registration with this API."]
+    },
+    {
+      "type": "section",
+      "heading": "Registering Through the Website",
+      "paragraphs": [
+        "This is how to register with this API through the <a href=\"http://scratchverifier.ddns.net/site/\">website</a>.",
+        {"type": "ol", "items": [
+          "Visit the website.",
+          "Click \"Login/Register\" at the top right",
+          "You will be presented with a verification code. (That's right, we use our own API to register people with it!)",
+          "Post this code on your own profile comments",
+          "Click \"Continue\"",
+          "You will then be logged in",
+          "You will be presented with a button saying \"Create client\". Click it",
+          "You will be shown your client ID and a button to copy your token.",
+          "Put your client ID and token into your app's configuration. Done!"
+        ]},
+        "At any point, if you wish to view your info again, simply login (if necessary) and you will be presented with it."
+      ]
+    },
+    {
+      "type": "section",
+      "heading": "Registering Through the API",
+      "paragraphs": [
+        "The API itself provides endpoints to register yourself. Here's how to use them:",
+        {"type": "ol", "items": [
+          "Send an HTTP <span class=\"method\">POST</span> request to <code>/users/<span class=\"param\">{yourusername}</span>/login</code>",
+          "The API will send you a <a href=\"reference.html#verification-object\">Verification</a> object containing a code",
+          "Post this code on your own profile comments",
+          "Send an HTTP <span class=\"method\">POST</span> request to <code>/users/<span class=\"param\">{yourusername}</span>/finish-login</code>",
+          "You will receive a <a href=\"reference.html#session-object\">Session</a> object containing a single integer. This is your session ID; it lasts for a year",
+          "Assuming you haven't already created a client, send an HTTP <span class=\"method\">PUT</span> request to <code>/session/<span class=\"param\">{session}</span></code>",
+          "You will receive a <a href=\"reference.html#user-object\">User</a> object containing your client ID and token",
+          "Put your client ID and token into your app's configuration. Done!"
+        ]},
+        "At any point, if it becomes necessary to fetch your info again, simply send an HTTP <span class=\"method\">GET</span> request to <code>/session/<span class=\"param\">{session}</span></code> and you will receive it. If you receive a 401 Unauthorized response, you need to get another session ID by following steps 1-5."
+      ]
+    },
+    {
+      "type": "section",
+      "heading": "Resetting your Token",
+      "paragraphs": [
+        "If you think your token has been compromised, you can reset your token using the website:",
+        {"type": "ol", "items": [
+          "Visit the website. If presented with your current info, skip to step 8",
+          "Click \"Login/Register\" at the top right",
+          "You will be presented with a verification code",
+          "Post this code on your own profile comments",
+          "Click \"Continue\"",
+          "You will then be logged in",
+          "You will be presented with your client info",
+          "Click the button labelled \"Reset token\"",
+          "Copy your new token and update your app's configuration. Done!"
+        ]},
+        "Or using the API:",
+        {"type": "ol", "items": [
+          "<span class=\"method\">GET</span> <code>/session/<span class=\"param\">{session}</span></code> to fetch your info",
+          "If you receive your info, skip to step 8. Otherwise, continue with step 3",
+          "Send an HTTP <span class=\"method\">POST</span> request to <code>/users/<span class=\"param\">{yourusername}</span>/login</code>",
+          "The API will send you a <a href=\"reference.html#verification-object\">Verification</a> object containing a code",
+          "Post this code on your own profile comments",
+          "Send an HTTP <span class=\"method\">POST</span> request to <code>/users/<span class=\"param\">{yourusername}</span>/finish-login</code>",
+          "You will receive a <a href=\"reference.html#session-object\">Session</a> object containing a single integer. This is your session ID; it lasts for a year",
+          "Send an HTTP <span class=\"method\">PATCH</span> request to <code>/session/<span class=\"param\">{session}</span></code>",
+          "You will receive a new <a href=\"reference.html#user-object\">User</a> object containing your client ID and updated token",
+          "Update your token in your app's configuration. Done!"
+        ]}
+      ]
+    },
+    {
+      "type": "section",
+      "heading": "Deleting your Account",
+      "paragraphs": [
+        "We're sorry to see you go! You can deregister from the API through the website:",
+        {"type": "ol", "items": [
+          "Visit the website. If presented with your current info, skip to step 8",
+          "Click \"Login/Register\" at the top right",
+          "You will be presented with a verification code",
+          "Post this code on your own profile comments",
+          "Click \"Continue\"",
+          "You will then be logged in",
+          "You will be presented with your client info",
+          "Click the button labelled \"Delete Account\"",
+          "Click the confirmation. :("
+        ]},
+        "Or using the API:",
+        {"type": "ol", "items": [
+          "<span class=\"method\">GET</span> <code>/session/<span class=\"param\">{session}</span></code> to fetch your info",
+          "If you receive your info, skip to step 8. Otherwise, continue with step 3",
+          "Send an HTTP <span class=\"method\">POST</span> request to <code>/users/<span class=\"param\">{yourusername}</span>/login</code>",
+          "The API will send you a <a href=\"reference.html#verification-object\">Verification</a> object containing a code",
+          "Post this code on your own profile comments",
+          "Send an HTTP <span class=\"method\">POST</span> request to <code>/users/<span class=\"param\">{yourusername}</span>/finish-login</code>",
+          "You will receive a <a href=\"reference.html#session-object\">Session</a> object containing a single integer. This is your session ID; it lasts for a year",
+          "Send an HTTP <span class=\"method\">DELETE</span> request to <code>/session/<span class=\"param\">{session}</span></code>",
+          "You will receive a 204 No Content response. :("
+        ]},
+        "<i>Note: This only deregisters your client from the API. You are still free to re-register later. Resetting your token is almost like deregistering and re-registering again.</i>"
+      ]
+    }
+  ]
+}

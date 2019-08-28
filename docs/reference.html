@@ -1,0 +1,396 @@
+<!doctype html>
+<html>
+<head>
+    <link rel="stylesheet" href="main.css" />
+    <script src="main.js"></script>
+</head>
+<body><div id="body">
+
+<h1 id="api-reference">API Reference</h1>
+<p>The ScratchVerifier API is a HTTP/REST API for all operations.</p>
+<p><b>API Base URL</b>: <a href="http://scratchverifier.ddns.net">http://scratchverifier.ddns.net</a></p>
+<h2 id="authorization">Authorization</h2>
+<p>Authorization is done using <a href="https://tools.ietf.org/html/rfc7617">Basic HTTP Authorization</a>, using your client ID as the username and token as the password.</p>
+<table><caption>Example Authorization Header</caption>
+<tr><td class="pre">Authorization: Basic MTAxMTQ3NjQ6NDY5MDI1YzYxM2RhNDMwYmEzMTE0NzIwY...==</td></tr>
+</table>
+<h2 id="api-endpoints">API Endpoints</h2>
+<p>The simplicity of this API is such that there are only two total endpoints for its ultimate purpose.</p>
+<h3 id="start-verification-endpoint">Start Verification Endpoint</h3>
+<div class="endpoint">
+<div class="method-path auth-needed" onclick="showOrHide(this)"><span class="method">PUT</span> <code>/verify/<span class="param">{username}</span></code> <a href="#authorization"><img src="https://image.flaticon.com/icons/png/512/61/61457.png" title="Authorization necessary" /></a></div>
+<div style="display: none">
+<table><caption>URL Params</caption>
+<tr><th>Field</th><th>Type</th><th>Description</th>
+<tr><td>username</td><td>string</td><td>The username to verify</td></tr>
+</table>
+<table><caption>HTTP statuses</caption>
+<tr><th>Status</th><th>Meaning</th>
+<tr><td>200 OK</td><td>returns <a href="#verification-object">Verification</a> object</td></tr>
+<tr><td>400 Bad Request</td><td>username is invalid by Scratch rules</td></tr>
+<tr><td>401 Unauthorized</td><td>missing/invalid <a href="#authorization">authorization</a></td></tr>
+<tr><td>404 Not Found</td><td>username 404ed on Scratch API</td></tr>
+</table>
+<table><caption>Returns a <a href="#verification-object">Verification</a> object</caption>
+<tr><td class="pre">{
+  "code": "EJAAFcffGJeFDCGdJB...",
+  "username": "ScratchUsername"
+}</td></tr>
+</table>
+</div></div>
+<h3 id="finish-verification-endpoint">Finish Verification Endpoint</h3>
+<div class="endpoint">
+<div class="method-path auth-needed" onclick="showOrHide(this)"><span class="method">POST</span> <code>/verify/<span class="param">{username}</span></code> <a href="#authorization"><img src="https://image.flaticon.com/icons/png/512/61/61457.png" title="Authorization necessary" /></a></div>
+<div style="display: none">
+<table><caption>URL Params</caption>
+<tr><th>Field</th><th>Type</th><th>Description</th>
+<tr><td>username</td><td>string</td><td>The username to verify</td></tr>
+</table>
+<table><caption>HTTP statuses</caption>
+<tr><th>Status</th><th>Meaning</th>
+<tr><td>204 No Content</td><td>verification successful</td></tr>
+<tr><td>400 Bad Request</td><td>username is invalid by Scratch rules</td></tr>
+<tr><td>401 Unauthorized</td><td>missing/invalid <a href="#authorization">authorization</a></td></tr>
+<tr><td>404 Not Found</td><td>username 404ed on Scratch API</td></tr>
+</table>
+<table><caption>Returns nothing</caption>
+<tr><td class="pre"></td></tr>
+</table>
+</div></div>
+<h2 id="api-registration-endpoints">API Registration Endpoints</h2>
+<p>These endpoints are to do with registering a client with the API.</p>
+<h3 id="start-logging-in-endpoint">Start Logging In Endpoint</h3>
+<div class="endpoint">
+<div class="method-path" onclick="showOrHide(this)"><span class="method">POST</span> <code>/users/<span class="param">{username}</span>/login</code> <a href="#authorization"><img src="https://image.flaticon.com/icons/png/512/61/61457.png" title="Authorization necessary" /></a></div>
+<div style="display: none">
+<table><caption>URL Params</caption>
+<tr><th>Field</th><th>Type</th><th>Description</th>
+<tr><td>username</td><td>string</td><td>The username to log in with</td></tr>
+</table>
+<table><caption>HTTP statuses</caption>
+<tr><th>Status</th><th>Meaning</th>
+<tr><td>200 OK</td><td>returns <a href="#verification-object">Verification</a> object</td></tr>
+<tr><td>400 Bad Request</td><td>username is invalid by Scratch rules</td></tr>
+<tr><td>404 Not Found</td><td>username 404ed on Scratch API</td></tr>
+</table>
+<table><caption>Returns a <a href="#verification-object">Verification</a> object</caption>
+<tr><td class="pre">{
+  "code": "EJAAFcffGJeFDCGdJB...",
+  "username": "ScratchUsername"
+}</td></tr>
+</table>
+</div></div>
+<h3 id="finish-logging-in-endpoint">Finish Logging In Endpoint</h3>
+<div class="endpoint">
+<div class="method-path" onclick="showOrHide(this)"><span class="method">POST</span> <code>/users/<span class="param">{username}</span>/finish-login</code> <a href="#authorization"><img src="https://image.flaticon.com/icons/png/512/61/61457.png" title="Authorization necessary" /></a></div>
+<div style="display: none">
+<table><caption>URL Params</caption>
+<tr><th>Field</th><th>Type</th><th>Description</th>
+<tr><td>username</td><td>string</td><td>The username to log in with</td></tr>
+</table>
+<table><caption>HTTP statuses</caption>
+<tr><th>Status</th><th>Meaning</th>
+<tr><td>200 OK</td><td>returns <a href="#session-object">Session</a> object</td></tr>
+<tr><td>400 Bad Request</td><td>username is invalid by Scratch rules</td></tr>
+<tr><td>401 Unauthorized</td><td>login failed</td></tr>
+<tr><td>404 Not Found</td><td>username 404ed on Scratch API</td></tr>
+</table>
+<table><caption>Returns a <a href="#session-object">Session</a> object</caption>
+<tr><td class="pre">{
+  "session": 1234567890
+}</td></tr>
+</table>
+</div></div>
+<h3 id="get-client-info-endpoint">Get Client Info Endpoint</h3>
+<div class="endpoint">
+<div class="method-path" onclick="showOrHide(this)"><span class="method">GET</span> <code>/session/<span class="param">{session ID}</span></code> <a href="#authorization"><img src="https://image.flaticon.com/icons/png/512/61/61457.png" title="Authorization necessary" /></a></div>
+<div style="display: none">
+<table><caption>URL Params</caption>
+<tr><th>Field</th><th>Type</th><th>Description</th>
+<tr><td>session ID</td><td>string</td><td>Session ID returned by <a href="#finish-logging-in-endpoint">Finish Logging In</a> endpoint</td></tr>
+</table>
+<table><caption>HTTP statuses</caption>
+<tr><th>Status</th><th>Meaning</th>
+<tr><td>200 OK</td><td>returns <a href="#user-object">User</a> object</td></tr>
+<tr><td>401 Unauthorized</td><td><code>session ID</code> invalid or not specified</td></tr>
+<tr><td>404 Not Found</td><td>this user is not registered with the API yet</td></tr>
+</table>
+<table><caption>Returns a <a href="#user-object">User</a> object</caption>
+<tr><td class="pre">{
+  "client_id": 10114764,
+  "token": "dd9410f80ba0...",
+  "username": "ScratchUsername"
+}</td></tr>
+</table>
+</div></div>
+<h3 id="create-client-endpoint">Create Client Endpoint</h3>
+<div class="endpoint">
+<div class="method-path" onclick="showOrHide(this)"><span class="method">PUT</span> <code>/session/<span class="param">{session ID}</span></code> <a href="#authorization"><img src="https://image.flaticon.com/icons/png/512/61/61457.png" title="Authorization necessary" /></a></div>
+<div style="display: none">
+<table><caption>URL Params</caption>
+<tr><th>Field</th><th>Type</th><th>Description</th>
+<tr><td>session ID</td><td>string</td><td>Session ID returned by <a href="#finish-logging-in-endpoint">Finish Logging In</a> endpoint</td></tr>
+</table>
+<table><caption>HTTP statuses</caption>
+<tr><th>Status</th><th>Meaning</th>
+<tr><td>200 OK</td><td>returns new <a href="#user-object">User</a> object</td></tr>
+<tr><td>401 Unauthorized</td><td><code>session ID</code> invalid or not specified</td></tr>
+<tr><td>409 Conflict</td><td>this user is already registered with the API</td></tr>
+</table>
+<table><caption>Returns a <a href="#user-object">User</a> object</caption>
+<tr><td class="pre">{
+  "client_id": 10114764,
+  "token": "dd9410f80ba0...",
+  "username": "ScratchUsername"
+}</td></tr>
+</table>
+</div></div>
+<h3 id="reset-token-endpoint">Reset Token Endpoint</h3>
+<div class="endpoint">
+<div class="method-path" onclick="showOrHide(this)"><span class="method">PATCH</span> <code>/session/<span class="param">{session ID}</span></code> <a href="#authorization"><img src="https://image.flaticon.com/icons/png/512/61/61457.png" title="Authorization necessary" /></a></div>
+<div style="display: none">
+<table><caption>URL Params</caption>
+<tr><th>Field</th><th>Type</th><th>Description</th>
+<tr><td>session ID</td><td>string</td><td>Session ID returned by <a href="#finish-logging-in-endpoint">Finish Logging In</a> endpoint</td></tr>
+</table>
+<table><caption>HTTP statuses</caption>
+<tr><th>Status</th><th>Meaning</th>
+<tr><td>200 OK</td><td>returns updated <a href="#user-object">User</a> object</td></tr>
+<tr><td>401 Unauthorized</td><td><code>session ID</code> invalid or not specified</td></tr>
+</table>
+<table><caption>Returns a <a href="#user-object">User</a> object</caption>
+<tr><td class="pre">{
+  "client_id": 10114764,
+  "token": "dd9410f80ba0...",
+  "username": "ScratchUsername"
+}</td></tr>
+</table>
+</div></div>
+<h3 id="delete-client-endpoint">Delete Client Endpoint</h3>
+<div class="endpoint">
+<div class="method-path" onclick="showOrHide(this)"><span class="method">DELETE</span> <code>/session/<span class="param">{session ID}</span></code> <a href="#authorization"><img src="https://image.flaticon.com/icons/png/512/61/61457.png" title="Authorization necessary" /></a></div>
+<div style="display: none">
+<table><caption>URL Params</caption>
+<tr><th>Field</th><th>Type</th><th>Description</th>
+<tr><td>session ID</td><td>string</td><td>Session ID returned by <a href="#finish-logging-in-endpoint">Finish Logging In</a> endpoint</td></tr>
+</table>
+<table><caption>HTTP statuses</caption>
+<tr><th>Status</th><th>Meaning</th>
+<tr><td>204 No Content</td><td>client was successfully deleted</td></tr>
+<tr><td>401 Unauthorized</td><td><code>session ID</code> invalid or not specified</td></tr>
+</table>
+<table><caption>Returns nothing</caption>
+<tr><td class="pre"></td></tr>
+</table>
+</div></div>
+<h2 id="api-usage-endpoints">API Usage Endpoints</h2>
+<p>These endpoints fetch API usage logs.</p>
+<h3 id="get-usage-logs-endpoint">Get Usage Logs Endpoint</h3>
+<div class="endpoint">
+<div class="method-path" onclick="showOrHide(this)"><span class="method">GET</span> <code>/usage</code> <a href="#authorization"><img src="https://image.flaticon.com/icons/png/512/61/61457.png" title="Authorization necessary" /></a></div>
+<div style="display: none">
+<table><caption>URL Params</caption>
+<tr><th>Field</th><th>Type</th><th>Description</th>
+</table>
+<table><caption>Query String Params</caption>
+<tr><th>Field</th><th>Type</th><th>Description</th>
+<tr><td>limit=n</td><td>integer</td><td>Return at most <code>n</code> logs. <code>n</code> cannot be greater than 500</td></tr>
+<tr><td>start=n</td><td>integer</td><td>Return logs that happened before (not including) the log with ID <code>n</code>. Usually used for getting the next page of logs. This does not have to be a valid ID (though it usually is)</td></tr>
+<tr><td>before=n</td><td>integer</td><td>Return logs that happened before (and including) the Unix epoch time <code>n</code></td></tr>
+<tr><td>end=n</td><td>integer</td><td>Return logs that happened after (not including) the log with ID <code>n</code></td></tr>
+<tr><td>after=n</td><td>integer</td><td>Return logs that happened after (and including) the Unix epoch time <code>n</code>. Usually used to limit returned logs by time</td></tr>
+<tr><td>client_id=n</td><td>integer</td><td>Only return logs with the client ID <code>n</code></td></tr>
+<tr><td>username=name</td><td>string</td><td>Only return logs with the username <code>name</code></td></tr>
+<tr><td>type=n</td><td>integer</td><td>Only return logs with the <a href="#log-types">log type</a> <code>n</code></td></tr>
+</table>
+<table><caption>HTTP statuses</caption>
+<tr><th>Status</th><th>Meaning</th>
+<tr><td>200 OK</td><td>returns list of <a href="#log-object">Log</a> objects</td></tr>
+<tr><td>403 Forbidden</td><td><code>limit</code> was greater than 500</td></tr>
+</table>
+<table><caption>Returns a list of <a href="#log-object">Log</a> objects</caption>
+<tr><td class="pre">{
+  "log_id": 123,
+  "client_id": 1234567890,
+  "username": "ScratchUsername",
+  "log_time": "1566974952",
+  "log_type": 1
+}</td></tr>
+</table>
+</div></div>
+<h3 id="get-usage-log-endpoint">Get Usage Log Endpoint</h3>
+<div class="endpoint">
+<div class="method-path" onclick="showOrHide(this)"><span class="method">GET</span> <code>/usage/<span class="param">{log ID}</span></code> <a href="#authorization"><img src="https://image.flaticon.com/icons/png/512/61/61457.png" title="Authorization necessary" /></a></div>
+<div style="display: none">
+<table><caption>URL Params</caption>
+<tr><th>Field</th><th>Type</th><th>Description</th>
+<tr><td>log ID</td><td>integer</td><td>ID of log entry to fetch</td></tr>
+</table>
+<table><caption>HTTP statuses</caption>
+<tr><th>Status</th><th>Meaning</th>
+<tr><td>200 OK</td><td>returns single <a href="#log-object">Log</a> object</td></tr>
+<tr><td>404 Not Found</td><td>no log with such ID</td></tr>
+</table>
+<table><caption>Returns a <a href="#log-object">Log</a> object</caption>
+<tr><td class="pre">{
+  "log_id": 123,
+  "client_id": 1234567890,
+  "username": "ScratchUsername",
+  "log_time": "1566974952",
+  "log_type": 1
+}</td></tr>
+</table>
+</div></div>
+<h2 id="objects">Objects</h2>
+<p>Various endpoints have defined return types. They are documented below.</p>
+<h3 id="verification-object">Verification Object</h3>
+<p>Holds data related to verifying a user on Scratch.</p>
+<table><caption>Verification Structure</caption>
+<tr><th>Field</th><th>Type</th><th>Description</th></tr>
+
+<tr><td>code</td><td>string</td><td>verification code to post</td></tr>
+<tr><td>username</td><td>string</td><td>username being verified</td></tr>
+</table>
+<h3 id="session-object">Session Object</h3>
+<p>Holds the session ID to use in other API registration endpoints.</p>
+<table><caption>Session Structure</caption>
+<tr><th>Field</th><th>Type</th><th>Description</th></tr>
+
+<tr><td>session</td><td>integer</td><td>session ID to use</td></tr>
+</table>
+<h3 id="user-object">User Object</h3>
+<p>Holds data that a client needs to access the API.</p>
+<table><caption>User Structure</caption>
+<tr><th>Field</th><th>Type</th><th>Description</th></tr>
+
+<tr><td>client_id</td><td>integer</td><td>client ID</td></tr>
+<tr><td>token</td><td>string</td><td>API token for client</td></tr>
+<tr><td>username</td><td>string</td><td>username of client</td></tr>
+</table>
+<h3 id="log-object">Log Object</h3>
+<p>Holds log data for a verification.</p>
+<table><caption>Log Structure</caption>
+<tr><th>Field</th><th>Type</th><th>Description</th></tr>
+
+<tr><td>log_id</td><td>integer</td><td>log ID</td></tr>
+<tr><td>client_id</td><td>integer</td><td>client ID responsible for this log</td></tr>
+<tr><td>username</td><td>string</td><td>username being verified</td></tr>
+<tr><td>log_time</td><td>integer</td><td>Unix epoch time of log</td></tr>
+<tr><td>log_type</td><td>integer</td><td><a href="#log-types">log type</a></td></tr>
+</table>
+<h2 id="log-types">Log Types</h2>
+<p>Logs can have three types:</p>
+<ul>
+<li><code>1</code>: verification started</li>
+<li><code>2</code>: verification succeeded</li>
+<li><code>3</code>: verification failed</li>
+</ul>
+</div><div id="contents"><h1>Navigation</h1>
+<div><a href="#api-reference">API&nbsp;Reference</a>
+<ul>
+<li>
+<div><a href="#authorization">Authorization</a>
+<ul>
+</ul>
+</li>
+<li>
+<div><a href="#api-endpoints">API&nbsp;Endpoints</a>
+<ul>
+<li>
+<div><a href="#start-verification-endpoint">Start&nbsp;Verification&nbsp;Endpoint</a>
+<ul>
+</ul>
+</li>
+<li>
+<div><a href="#finish-verification-endpoint">Finish&nbsp;Verification&nbsp;Endpoint</a>
+<ul>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<div><a href="#api-registration-endpoints">API&nbsp;Registration&nbsp;Endpoints</a>
+<ul>
+<li>
+<div><a href="#start-logging-in-endpoint">Start&nbsp;Logging&nbsp;In&nbsp;Endpoint</a>
+<ul>
+</ul>
+</li>
+<li>
+<div><a href="#finish-logging-in-endpoint">Finish&nbsp;Logging&nbsp;In&nbsp;Endpoint</a>
+<ul>
+</ul>
+</li>
+<li>
+<div><a href="#get-client-info-endpoint">Get&nbsp;Client&nbsp;Info&nbsp;Endpoint</a>
+<ul>
+</ul>
+</li>
+<li>
+<div><a href="#create-client-endpoint">Create&nbsp;Client&nbsp;Endpoint</a>
+<ul>
+</ul>
+</li>
+<li>
+<div><a href="#reset-token-endpoint">Reset&nbsp;Token&nbsp;Endpoint</a>
+<ul>
+</ul>
+</li>
+<li>
+<div><a href="#delete-client-endpoint">Delete&nbsp;Client&nbsp;Endpoint</a>
+<ul>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<div><a href="#api-usage-endpoints">API&nbsp;Usage&nbsp;Endpoints</a>
+<ul>
+<li>
+<div><a href="#get-usage-logs-endpoint">Get&nbsp;Usage&nbsp;Logs&nbsp;Endpoint</a>
+<ul>
+</ul>
+</li>
+<li>
+<div><a href="#get-usage-log-endpoint">Get&nbsp;Usage&nbsp;Log&nbsp;Endpoint</a>
+<ul>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<div><a href="#objects">Objects</a>
+<ul>
+<li>
+<div><a href="#verification-object">Verification&nbsp;Object</a>
+<ul>
+</ul>
+</li>
+<li>
+<div><a href="#session-object">Session&nbsp;Object</a>
+<ul>
+</ul>
+</li>
+<li>
+<div><a href="#user-object">User&nbsp;Object</a>
+<ul>
+</ul>
+</li>
+<li>
+<div><a href="#log-object">Log&nbsp;Object</a>
+<ul>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<div><a href="#log-types">Log&nbsp;Types</a>
+<ul>
+</ul>
+</li>
+</ul>
+<div><a href="index.html">Welcome&nbsp;to&nbsp;ScratchVerifier</a></div>
+<div><a href="usage.html">ScratchVerifier&nbsp;Usage</a></div>
+<div><a href="registration.html">ScratchVerifier&nbsp;Registration</a></div>
+</div></body>
+</html>
