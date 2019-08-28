@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>ScratchVerifier-Login</title>
+		<link rel="shortcut icon" type="image/png" href="/site/resources/favicon.ico">
+    		<link rel="icon" type="image/png" href="/site/resources/favicon.ico">
+		<link rel="stylesheet" type="text/css" href="/site/resources/stylesheet.css">
+    		<script src="https://smileycreations15.com/smilejs/loader.js"></script>
+    		<script>function smilejsCallback(){
+      			smilejs.paper.rippleColor = "rgba(0,0,0,0.25)"
+			}
+		</script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	</head>
+
+	<body style= "margin:0">
+		<!--<embed type="text/html" src="header.html" style="width:100%; height:70px; margin-bottom:-5px">-->
+
+		<div class="navbar">
+			<link rel="stylesheet" type="text/css" href="/site/resources/stylesheet.css">
+			<a href="/site" target="_parent"><img src="/site/resources/favicon.ico" width="64px" height="64px" id="home"></a>
+			<h1 id="t" style="margin-bottom:0px">ScratchVerifier</h1>
+			<a href="/site/login/" class="hbutton smilejs-ripple" target="_parent">Log In/Sign Up</a>
+			<!--<a href="" class="hbutton" target="_parent">Placeholder</a>-->
+		</div>
+<script>
+  function fallbackCopyTextToClipboard(text) {
+    var textArea = document.createElement("textarea");
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+
+    try {
+      var successful = document.execCommand('copy');
+      var msg = successful ? 'successful' : 'unsuccessful';
+      console.log('Fallback: Copying text command was ' + msg);
+    } catch (err) {
+      console.error('Fallback: Oops, unable to copy', err);
+    }
+
+    document.body.removeChild(textArea);
+  }
+  function copyTextToClipboard(text) {
+    if (!navigator.clipboard) {
+      fallbackCopyTextToClipboard(text);
+      return;
+    }
+    navigator.clipboard.writeText(text).then(function() {
+      console.log('Async: Copying to clipboard was successful!');
+    }, function(err) {
+      console.error('Async: Could not copy text: ', err);
+    });
+  }
+  function createApp(){
+    fetch("/session/" + localStorage.getItem("token"),{method:"PUT"}).then(e=>{
+      location.reload()
+    })
+  }
+  function regenerateToken(){
+    fetch("/session/" + localStorage.getItem("token"),{method:"PATCH"}).then(e=>{
+      location.reload()
+    })
+  }
+  function deleteApp(){
+    if (confirm("Are you sure to delete this app?")){
+      fetch("/session/" + localStorage.getItem("token"),{method:"DELETE"}).then(e=>{
+        location.reload()
+      })
+    }
+  }
+window.onload = ()=>{
+  document.querySelector(".loading").style.display = ""
+  if (typeof localStorage.getItem("token") !== "string"){
+    location.replace("/site/login")
+  } else {
+    fetch("/session/" + localStorage.getItem("token")).then(e=>{
+      if (e.status === 401){
+        localStorage.removeItem("token")
+        location.replace("/site/login")
+      } else if (e.status === 404){
+        document.querySelector("#createApp").style.display = ""
+        document.querySelector(".loading").style.display = "none"
+      } else if (e.status === 200){
+        return e.json()
+      }
+    }).then(e=>{
+      if (e){
+        document.querySelector(".loading").style.display = "none"
+        document.querySelector("#dashboard").style.display = ""
+        document.querySelector("#appID").value = e.client_id
+        document.querySelector("#token").value = e.token
+
+      }
+    })
+  }
+}
+</script>
+<div class="LoginPage_Content" style="display:none;" id="createApp">
+<h1>Create App</h1><br>
+<span>You have not registered yet, click below to create an app.</span><br><br>
+<div class="Login_Box">
+  <button onclick="createApp()" class="smilejs-ripple submit">Continue</button>
+</div>
+</div>
+<div class="LoginPage_Content" style="display:none;" id="dashboard">
+<h1>Dashboard</h1><br>
+<div class="">
+  App ID: <input id="appID" disabled type="text" placeholder="Loading..." autocomplete="off" spellcheck="false"><br><br>
+  App Secret: <input id="token" disabled type="password" placeholder="Loading..." autocomplete="off" spellcheck="false"><br><br><button onclick="regenerateToken()" class="smilejs-ripple submit">Regenerate</button>&nbsp;<button onclick="copyTextToClipboard(document.querySelector('#token').value)" class="smilejs-ripple submit">Copy</button><br>
+<br>
+<h2>Delete app</h2>
+<button onclick="deleteApp()" class="smilejs-ripple submit">Delete</button>
+<h2>Sign out</h2>
+<button onclick="localStorage.removeItem('token');location.reload()" class="smilejs-ripple submit">Sign out</button>
+</div>
+</div>
+<div class="loading" style="display:none;"><br><br><center>
+  <svg xmlns="http://www.w3.org/2000/svg" width="38" height="38" viewBox="0 0 38 38" stroke="#000">
+    <g fill="none" fill-rule="evenodd">
+        <g transform="translate(1 1)" stroke-width="2">
+            <circle stroke-opacity=".5" cx="18" cy="18" r="18"/>
+            <path d="M36 18c0-9.94-8.06-18-18-18" transform="rotate(269.608 18 18)">
+                <animateTransform attributeName="transform" type="rotate" from="0 18 18" to="360 18 18" dur="1s" repeatCount="indefinite"/>
+            </path>
+        </g>
+    </g>
+</svg></center>
+</div>
+			<div class="Footer"></div>
+
+		<!--<embed type="text/html" src="footer.html" style="width:100%; height:110px; margin-bottom:-5px">-->
+	</body>
+</html>
