@@ -1,11 +1,15 @@
+import os
 import re
+import time
+from glob import glob
 import asyncio
+import mimetypes
 from aiohttp import web, ClientSession, BasicAuth
 from db import Database, USERS_API
 from responses import *
 
 DEFAULT_PORT = 8888
-COMMENTS_API = 'https://scratch.mit.edu/site-api/comments/users/{}/\
+COMMENTS_API = 'https://scratch.mit.edu/site-api/comments/user/{}/\
 ?page=1&salt={}'
 COMMENTS_REGEX = re.compile(r"""<div id="comments-\d+" class="comment +" data-comment-id="\d+">.*?<div class="actions-wrap">.*?<div class="name">\s+<a href="/users/([_a-zA-Z0-9-]+)">\1</a>\s+</div>\s+<div class="content">(.*?)</div>""", re.S)
 
@@ -21,7 +25,8 @@ class Server:
             web.put('/session/{session}', self.put_user),
             web.patch('/session/{session}', self.reset_token),
             web.delete('/session/{session}', self.del_user),
-            web.view('/{.*}', self.not_found)
+            web.get('/site/{path:.*}', self.file_handler),
+            web.view('/{path:.*}', self.not_found)
         ])
         self.session = ClientSession()
         self.db = Database(self.session)
@@ -37,18 +42,25 @@ class Server:
         await self.session.close()
         await self.db.close()
 
-    async def _wakeup():
+    async def _wakeup(self):
+        files = glob(os.path.join(os.path.dirname(__file__), '*.py'))
+        files = {f: os.path.getmtime(f) for f in files}
         while 1:
             try:
+                for i in files:
+                    if os.path.getmtime(i) > files[i]:
+                        return
                 await asyncio.sleep(1)
             except:
                 return
 
     def run_sync(self, port=DEFAULT_PORT):
         loop = asyncio.get_event_loop()
-        loop.run_until_complete(self.run(port))
-        loop.run_until_complete(self._wakeup())
-        loop.run_until_complete(self.stop())
+        try:
+            loop.run_until_complete(self.run(port))
+            loop.run_until_complete(self._wakeup())
+        finally:
+            loop.run_until_complete(self.stop())
 
     async def check_token(self, request):
         if 'Authorization' not in request.headers:
@@ -80,7 +92,7 @@ class Server:
         code = await self.db.get_code(client_id, username)
         if not code:
             raise web.HTTPNotFound()
-        async with self.session.get(COMMENTS_API'.format(
+        async with self.session.get(COMMENTS_API.format(
             username, int(time.time())
         )) as resp:
             if resp.status != 200:
@@ -157,3 +169,32 @@ class Server:
         session_id = await self.check_session(request)
         await self.db.del_client(session_id)
         raise web.HTTPNoContent()
+
+    async def file_handler(self, request):
+        WEB_ROOT = os.path.join(os.path.dirname(os.path.dirname(__file__)),
+                                'public')
+        PATH = request.match_info.get('path', 'index.html') or 'index.html'
+        print(repr(PATH))
+        if '.' not in PATH.split('/')[-1]:
+            PATH += '/index.html'
+        FILE = os.path.join(WEB_ROOT, PATH)
+        if request.if_modified_since:
+            if os.path.getmtime(FILE) <= \
+                    request.if_modified_since.total_seconds():
+                raise web.HTTPNotModified()
+        if request.if_unmodified_since:
+            if os.path.getmtime(FILE) > \
+                    request.if_unmodified_since.total_seconds():
+                raise web.HTTPPreconditionFailed()
+        try:
+            with open(FILE, 'rb') as f:
+                range = request.http_range
+                f.seek(range.start or 0)
+                data = f.read(((range.stop or 0) - (range.start or 0)) or -1)
+            ct = mimetypes.guess_type(PATH)
+            return web.Response(body=data, content_type=ct[0], charset=ct[1])
+        except FileNotFoundError:
+            raise web.HTTPNotFound()
+
+    async def not_found(self, request):
+        raise web.HTTPNotFound()
