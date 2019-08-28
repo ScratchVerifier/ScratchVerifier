@@ -24,3 +24,15 @@ CREATE TABLE IF NOT EXISTS scratchverifier_usage (
   -- expiry time of code: linux epoch integer
   expiry integer
 );
+CREATE TABLE IF NOT EXISTS scratchverifier_logs (
+  -- log ID to look up by
+  log_id integer PRIMARY KEY AUTOINCREMENT,
+  -- client ID used for the verification
+  client_id integer,
+  -- username being verified
+  username text,
+  -- time of log (unix epoch time)
+  log_time integer,
+  -- type of log: 1 for starting verification, 2 for successful, 3 for failed verification
+  log_type integer
+);
