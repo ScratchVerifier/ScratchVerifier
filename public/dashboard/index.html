@@ -106,7 +106,7 @@ window.onload = ()=>{
 <h1>Create App</h1><br>
 <span>You have not registered yet, click below to create an app.</span><br><br>
 <div class="Login_Box">
-  <button onclick="createApp()" class="smilejs-ripple submit">Continue</button>
+  <button onclick="createApp()" class="smilejs-ripple submit">Create Client</button>
 </div>
 </div>
 <div class="LoginPage_Content" style="display:none;" id="dashboard">
@@ -116,7 +116,7 @@ window.onload = ()=>{
   App Secret: <input id="token" disabled type="password" placeholder="Loading..." autocomplete="off" spellcheck="false"><br><br><button onclick="regenerateToken()" class="smilejs-ripple submit">Regenerate</button>&nbsp;<button onclick="copyTextToClipboard(document.querySelector('#token').value)" class="smilejs-ripple submit">Copy</button><br>
 <br>
 <h2>Delete app</h2>
-<button onclick="deleteApp()" class="smilejs-ripple submit">Delete</button>
+<button onclick="deleteApp()" class="smilejs-ripple submit">Delete Account</button>
 <h2>Sign out</h2>
 <button onclick="localStorage.removeItem('token');location.reload()" class="smilejs-ripple submit">Sign out</button>
 </div>
