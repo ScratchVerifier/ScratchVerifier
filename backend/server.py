@@ -29,6 +29,7 @@ class Server:
             web.post('/webhook', self.gh_hook),
             web.get('/site/{path:.*}', self.file_handler),
             web.get('/site/', self.file_handler),
+            web.get('/site', self.file_handler),
             web.view('/{path:.*}', self.not_found)
         ])
         self.session = ClientSession()
