@@ -59,6 +59,8 @@ class Server:
         try:
             loop.run_until_complete(self.run(port))
             loop.run_until_complete(self._wakeup())
+        except KeyboardInterrupt:
+            pass
         finally:
             loop.run_until_complete(self.stop())
 
@@ -128,7 +130,7 @@ class Server:
 
     async def finish_login(self, request):
         username = await self.check_username(request)
-        if await self._verified(client_id, username):
+        if await self._verified(0, username):
             return web.json_response(Session(
                 session=await self.db.new_session(username)
             ).d())
@@ -166,7 +168,7 @@ class Server:
     async def reset_token(self, request):
         session_id = await self.check_session(request)
         await self.db.reset_token(session_id)
-        return self.get_user(request)
+        return await self.get_user(request)
 
     async def del_user(self, request):
         session_id = await self.check_session(request)
@@ -177,7 +179,6 @@ class Server:
         WEB_ROOT = os.path.join(os.path.dirname(os.path.dirname(__file__)),
                                 'public')
         PATH = request.match_info.get('path', 'index.html') or 'index.html'
-        print(repr(PATH))
         if '.' not in PATH.split('/')[-1]:
             PATH += '/index.html'
         FILE = os.path.join(WEB_ROOT, PATH)

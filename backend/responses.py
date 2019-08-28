@@ -4,9 +4,15 @@ class Response(type):
     def __new__(cls, name, bases, attrs):
         def __init__(self, **kwargs):
             for k in self.__slots__:
+                if k.startswith('_'):
+                    continue
                 setattr(self, k, kwargs.get(k, None))
         def d(self):
-            return {k: getattr(self, k) for k in self.__slots__}
+            return {
+                k: getattr(self, k)
+                for k in self.__slots__
+                if not k.startswith('_')
+            }
         slots = []
         for k in attrs:
             slots.append(k)

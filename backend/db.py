@@ -40,9 +40,10 @@ WHERE session_id=?', (session_id,))
         row = await self.db.fetchone()
         if row is None:
             return None
+        return row[0]
 
     async def new_client(self, session_id):
-        username = self.username_from_session(session_id)
+        username = await self.username_from_session(session_id)
         if username is None:
             return None
         async with self.session.get(USERS_API.format(username)) as resp:
@@ -55,7 +56,7 @@ token, username) VALUES (?, ?, ?)', (client_id, token, username))
         return {'client_id': client_id, 'token': token, 'username': username}
 
     async def get_client(self, session_id):
-        username = self.username_from_session(session_id)
+        username = await self.username_from_session(session_id)
         if username is None:
             return None
         await self.db.execute('SELECT * FROM scratchverifier_clients \
@@ -66,14 +67,14 @@ WHERE username=?', (username,))
         return dict(row)
 
     async def reset_token(self, session_id):
-        username = self.username_from_session(session_id)
+        username = await self.username_from_session(session_id)
         if username is None:
             return
         await self.db.execute('UPDATE scratchverifier_clients SET token=? \
 WHERE username=?', (token_hex(32), username))
 
     async def del_client(self, session_id):
-        username = self.username_from_session(session_id)
+        username = await self.username_from_session(session_id)
         if username is None:
             return
         await self.db.execute('DELETE FROM scratchverifier_clients \
@@ -83,7 +84,7 @@ WHERE username=?', (username,))
 
     async def new_session(self, username):
         while 1:
-            session_id = randbits(64)
+            session_id = randbits(32)
             await self.db.execute('SELECT session_id FROM \
 scratchverifier_sessions WHERE session_id=?', (session_id,))
             if (await self.db.fetchone()) is None:
@@ -91,7 +92,7 @@ scratchverifier_sessions WHERE session_id=?', (session_id,))
         await self.db.execute('INSERT INTO scratchverifier_sessions \
 (session_id, expiry, username) VALUES (?, ?, ?)', (
             session_id,
-            int(time.time),
+            int(time.time()) + 31540000, # 1 year in seconds
             username
         ))
         return session_id
@@ -104,7 +105,7 @@ WHERE session_id=?', (session_id,))
             return True
         expiry = expiry[0]
         if time.time() > expiry:
-            await self.db.execute('DELETE FROM sessions \
+            await self.db.execute('DELETE FROM scratchverifier_sessions \
 WHERE session_id=?', (session_id,))
             return True
         return False
@@ -117,7 +118,7 @@ WHERE session_id=?', (session_id,))
             + str(time.time()).encode()
             + username.encode()
             + token_bytes()
-        )
+        ).hexdigest().translate({48 + i: 65 + i for i in range(10)})
         await self.db.execute('INSERT INTO scratchverifier_usage (client_id, \
 code, username, expiry) VALUES (?, ?, ?, ?)', (client_id, code, username,
                                int(time.time() + 1800)))
