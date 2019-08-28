@@ -141,7 +141,10 @@ class Server:
                                                                       None))
         if not (session or session.strip()):
             raise web.HTTPUnauthorized()
-        session_id = int(session)
+        try:
+            session_id = int(session)
+        except ValueError:
+            raise web.HTTPUnauthorized() from None
         if await self.db.get_expired(session_id):
             raise web.HTTPUnauthorized()
         return session_id
