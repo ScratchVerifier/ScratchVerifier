@@ -2,6 +2,7 @@ import os
 import re
 import time
 from glob import glob
+import hmac
 import asyncio
 import mimetypes
 from aiohttp import web, ClientSession, BasicAuth
@@ -14,7 +15,7 @@ COMMENTS_API = 'https://scratch.mit.edu/site-api/comments/user/{}/\
 COMMENTS_REGEX = re.compile(r"""<div id="comments-\d+" class="comment +" data-comment-id="\d+">.*?<div class="actions-wrap">.*?<div class="name">\s+<a href="/users/([_a-zA-Z0-9-]+)">\1</a>\s+</div>\s+<div class="content">(.*?)</div>""", re.S)
 
 class Server:
-    def __init__(self):
+    def __init__(self, hook_secret):
         self.app = web.Application()
         self.app.add_routes([
             web.put('/verify/{username}', self.verify),
@@ -25,12 +26,14 @@ class Server:
             web.put('/session/{session}', self.put_user),
             web.patch('/session/{session}', self.reset_token),
             web.delete('/session/{session}', self.del_user),
+            web.post('/webhook', self.gh_hook),
             web.get('/site/{path:.*}', self.file_handler),
             web.get('/site/', self.file_handler),
             web.view('/{path:.*}', self.not_found)
         ])
         self.session = ClientSession()
         self.db = Database(self.session)
+        self.hook_secret = hook_secret
 
     async def run(self, port=DEFAULT_PORT):
         self.runner = web.AppRunner(self.app)
@@ -175,6 +178,18 @@ class Server:
         session_id = await self.check_session(request)
         await self.db.del_client(session_id)
         raise web.HTTPNoContent()
+
+    async def gh_hook(self, request):
+        if 'X-Hub-Signature' not in request.headers:
+            raise HTTPUnauthorized()
+        digest = hmac.new(self.hook_secret, await request.read(), 'sha1')
+        digest = digest.hexdigest()
+        if not hmac.compare_digest(digest, request.headers['X-Hub-Signature']):
+            raise HTTPUnauthorized()
+        os.system('cd {} && git pull --rebase origin'.format(
+            os.path.dirname(__file__)
+        ))
+        raise HTTPNoContent()
 
     async def file_handler(self, request):
         WEB_ROOT = os.path.join(os.path.dirname(os.path.dirname(__file__)),
