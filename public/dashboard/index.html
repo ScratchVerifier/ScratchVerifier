@@ -4,8 +4,7 @@
 		<title>ScratchVerifier-Login</title>
 		<link rel="shortcut icon" type="image/png" href="/site/resources/favicon.ico">
     		<link rel="icon" type="image/png" href="/site/resources/favicon.ico">
-		<link rel="stylesheet" type="text/css" href="/site/resources/stylesheet.css">
-    		<script src="https://smileycreations15.com/smilejs/loader.js"></script>
+    		<script src="https://smileycreations15.com/smilejs/loader.js" async></script>
     		<script>function smilejsCallback(){
       			smilejs.paper.rippleColor = "rgba(0,0,0,0.25)"
 			}
@@ -13,7 +12,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 	</head>
 
-	<body style= "margin:0">
+	<body style="margin:0">
 		<!--<embed type="text/html" src="header.html" style="width:100%; height:70px; margin-bottom:-5px">-->
 
 		<div class="navbar">
@@ -22,7 +21,19 @@
 			<h1 id="t" style="margin-bottom:0px">ScratchVerifier</h1>
 			<a href="/site/login/" class="hbutton smilejs-ripple" target="_parent">Log In/Sign Up</a>
 			<!--<a href="" class="hbutton" target="_parent">Placeholder</a>-->
-		</div>
+		</div><div class="loading"><br><br><center>
+      <svg xmlns="http://www.w3.org/2000/svg" width="38" height="38" viewBox="0 0 38 38" stroke="#000">
+        <g fill="none" fill-rule="evenodd">
+            <g transform="translate(1 1)" stroke-width="2">
+                <circle stroke-opacity=".5" cx="18" cy="18" r="18"/>
+                <path d="M36 18c0-9.94-8.06-18-18-18" transform="rotate(269.608 18 18)">
+                    <animateTransform attributeName="transform" type="rotate" from="0 18 18" to="360 18 18" dur="1s" repeatCount="indefinite"/>
+                </path>
+            </g>
+        </g>
+    </svg></center>
+    </div>		<link rel="stylesheet" type="text/css" href="/site/resources/stylesheet.css">
+
 <script>
   function fallbackCopyTextToClipboard(text) {
     var textArea = document.createElement("textarea");
@@ -121,18 +132,7 @@ window.onload = ()=>{
 <button onclick="localStorage.removeItem('token');location.reload()" class="smilejs-ripple submit">Sign out</button>
 </div>
 </div>
-<div class="loading" style="display:none;"><br><br><center>
-  <svg xmlns="http://www.w3.org/2000/svg" width="38" height="38" viewBox="0 0 38 38" stroke="#000">
-    <g fill="none" fill-rule="evenodd">
-        <g transform="translate(1 1)" stroke-width="2">
-            <circle stroke-opacity=".5" cx="18" cy="18" r="18"/>
-            <path d="M36 18c0-9.94-8.06-18-18-18" transform="rotate(269.608 18 18)">
-                <animateTransform attributeName="transform" type="rotate" from="0 18 18" to="360 18 18" dur="1s" repeatCount="indefinite"/>
-            </path>
-        </g>
-    </g>
-</svg></center>
-</div>
+
 			<div class="Footer"></div>
 
 		<!--<embed type="text/html" src="footer.html" style="width:100%; height:110px; margin-bottom:-5px">-->
