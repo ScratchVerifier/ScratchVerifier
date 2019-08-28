@@ -53,17 +53,23 @@
     });
   }
   function createApp(){
+    document.querySelector("#createApp").style.display = "none"
+    document.querySelector(".loading").style.display = ""
     fetch("/session/" + localStorage.getItem("token"),{method:"PUT"}).then(e=>{
       location.reload()
     })
   }
   function regenerateToken(){
+    document.querySelector("#dashboard").style.display = "none"
+    document.querySelector(".loading").style.display = ""
     fetch("/session/" + localStorage.getItem("token"),{method:"PATCH"}).then(e=>{
       location.reload()
     })
   }
   function deleteApp(){
     if (confirm("Are you sure to delete this app?")){
+      document.querySelector("#dashboard").style.display = "none"
+      document.querySelector(".loading").style.display = ""
       fetch("/session/" + localStorage.getItem("token"),{method:"DELETE"}).then(e=>{
         location.reload()
       })
