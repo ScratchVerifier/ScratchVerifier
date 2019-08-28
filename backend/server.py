@@ -26,6 +26,7 @@ class Server:
             web.patch('/session/{session}', self.reset_token),
             web.delete('/session/{session}', self.del_user),
             web.get('/site/{path:.*}', self.file_handler),
+            web.get('/site/', self.file_handler),
             web.view('/{path:.*}', self.not_found)
         ])
         self.session = ClientSession()
