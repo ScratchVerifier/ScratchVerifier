@@ -18,7 +18,7 @@
 <tr><td class="pre">Authorization: Basic MTAxMTQ3NjQ6NDY5MDI1YzYxM2RhNDMwYmEzMTE0NzIwY...==</td></tr>
 </table>
 <h2 id="api-endpoints">API Endpoints</h2>
-<p>The simplicity of this API is such that there are only two total endpoints for its ultimate purpose.</p>
+<p>The simplicity of this API is such that there are only three total endpoints for its ultimate purpose.</p>
 <h3 id="start-verification-endpoint">Start Verification Endpoint</h3>
 <div class="endpoint">
 <div class="method-path auth-needed" onclick="showOrHide(this)"><span class="method">PUT</span> <code>/verify/<span class="param">{username}</span></code> <a href="#authorization"><img src="https://image.flaticon.com/icons/png/512/61/61457.png" title="Authorization necessary" /></a></div>
@@ -52,6 +52,25 @@
 <table><caption>HTTP statuses</caption>
 <tr><th>Status</th><th>Meaning</th>
 <tr><td>204 No Content</td><td>verification successful</td></tr>
+<tr><td>400 Bad Request</td><td>username is invalid by Scratch rules</td></tr>
+<tr><td>401 Unauthorized</td><td>missing/invalid <a href="#authorization">authorization</a></td></tr>
+<tr><td>404 Not Found</td><td>username 404ed on Scratch API OR user is not currently being verified</td></tr>
+</table>
+<table><caption>Returns nothing</caption>
+<tr><td class="pre"></td></tr>
+</table>
+</div></div>
+<h3 id="invalidate-verification-endpoint">Invalidate Verification Endpoint</h3>
+<div class="endpoint">
+<div class="method-path auth-needed" onclick="showOrHide(this)"><span class="method">DELETE</span> <code>/verify/<span class="param">{username}</span></code> <a href="#authorization"><img src="https://image.flaticon.com/icons/png/512/61/61457.png" title="Authorization necessary" /></a></div>
+<div style="display: none">
+<table><caption>URL Params</caption>
+<tr><th>Field</th><th>Type</th><th>Description</th>
+<tr><td>username</td><td>string</td><td>The username to give up on verifying</td></tr>
+</table>
+<table><caption>HTTP statuses</caption>
+<tr><th>Status</th><th>Meaning</th>
+<tr><td>204 No Content</td><td>invalidation successful</td></tr>
 <tr><td>400 Bad Request</td><td>username is invalid by Scratch rules</td></tr>
 <tr><td>401 Unauthorized</td><td>missing/invalid <a href="#authorization">authorization</a></td></tr>
 <tr><td>404 Not Found</td><td>username 404ed on Scratch API</td></tr>
@@ -282,11 +301,12 @@
 <tr><td>log_type</td><td>integer</td><td><a href="#log-types">log type</a></td></tr>
 </table>
 <h2 id="log-types">Log Types</h2>
-<p>Logs can have three types:</p>
+<p>Logs can have four types:</p>
 <ul>
 <li><code>1</code>: verification started</li>
 <li><code>2</code>: verification succeeded</li>
 <li><code>3</code>: verification failed</li>
+<li><code>4</code>: verification invalidated</li>
 </ul>
 </div><div id="contents"><h1>Navigation</h1>
 <div><a href="#api-reference">API&nbsp;Reference</a>
@@ -306,6 +326,11 @@
 </li>
 <li>
 <div><a href="#finish-verification-endpoint">Finish&nbsp;Verification&nbsp;Endpoint</a>
+<ul>
+</ul>
+</li>
+<li>
+<div><a href="#invalidate-verification-endpoint">Invalidate&nbsp;Verification&nbsp;Endpoint</a>
 <ul>
 </ul>
 </li>

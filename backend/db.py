@@ -113,6 +113,11 @@ WHERE session_id=?', (session_id,))
     ### TABLE: usage ###
 
     async def start_verification(self, client_id, username):
+        await self.db.execute('SELECT code FROM scratchverifier_usage WHERE \
+client_id=? AND username=?', (client_id, username))
+        row = await self.db.fetchone()
+        if row is not None:
+            return row[0]
         code = sha256(
             str(client_id).encode()
             + str(time.time()).encode()
@@ -148,7 +153,7 @@ VALUES (?, ?, ?, ?)', (client_id, username, int(time.time()), 3 - succ))
     ### TABLE: logs solely ###
 
     async def get_logs(self, limit=100, **params):
-        query = 'SELECT * FROM scratchverifier_logs WHERE limit=:limit'
+        query = 'SELECT * FROM scratchverifier_logs WHERE 1=1'
         if 'start' in params:
             query += ' AND log_id<:start'
         if 'before' in params:
@@ -163,6 +168,10 @@ VALUES (?, ?, ?, ?)', (client_id, username, int(time.time()), 3 - succ))
             query += ' AND username=:username'
         if 'type' in params:
             query += ' AND log_type=:type'
+        query += ' ORDER BY log_id DESC LIMIT :limit'
+        for k, v in params.items():
+            if k in {'start', 'before', 'end', 'after', 'client_id', 'type'}:
+                params[k] = int(v)
         await self.db.execute(query, {'limit': limit, **params})
         rows = await self.db.fetchall()
         return [dict(i) for i in rows]

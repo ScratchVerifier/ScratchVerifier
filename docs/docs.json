@@ -53,7 +53,7 @@
       "type": "section",
       "heading": "API Endpoints",
       "paragraphs": [
-        "The simplicity of this API is such that there are only two total endpoints for its ultimate purpose."
+        "The simplicity of this API is such that there are only three total endpoints for its ultimate purpose."
       ]
     },
     {
@@ -95,6 +95,27 @@
       },
       "http": {
         "204 No Content": "verification successful",
+        "400 Bad Request": "username is invalid by Scratch rules",
+        "401 Unauthorized": "missing/invalid <a href=\"#authorization\">authorization</a>",
+        "404 Not Found": "username 404ed on Scratch API OR user is not currently being verified"
+      },
+      "auth": true,
+      "returns": null
+    },
+    {
+      "type": "endpoint",
+      "name": "Invalidate Verification",
+      "method": "DELETE",
+      "path": "/verify/{username}",
+      "params": {
+        "username": {
+          "type": "string",
+          "desc": "The username to give up on verifying",
+          "query": false
+        }
+      },
+      "http": {
+        "204 No Content": "invalidation successful",
         "400 Bad Request": "username is invalid by Scratch rules",
         "401 Unauthorized": "missing/invalid <a href=\"#authorization\">authorization</a>",
         "404 Not Found": "username 404ed on Scratch API"
@@ -386,11 +407,12 @@
       "type": "section",
       "heading": "Log Types",
       "paragraphs": [
-        "Logs can have three types:",
+        "Logs can have four types:",
         {"type": "ul", "items": [
           "<code>1</code>: verification started",
           "<code>2</code>: verification succeeded",
-          "<code>3</code>: verification failed"
+          "<code>3</code>: verification failed",
+          "<code>4</code>: verification invalidated"
         ]}
       ]
     }

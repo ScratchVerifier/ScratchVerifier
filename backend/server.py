@@ -21,6 +21,7 @@ class Server:
         self.app.add_routes([
             web.put('/verify/{username}', self.verify),
             web.post('/verify/{username}', self.verified),
+            web.delete('/verify/{username}', self.unverify),
             web.post('/users/{username}/login', self.login),
             web.post('/users/{username}/finish-login', self.finish_login),
             web.get('/session/{session}', self.get_user),
@@ -132,6 +133,12 @@ class Server:
             raise web.HTTPNoContent()
         else:
             raise web.HTTPForbidden()
+
+    async def unverify(self, request):
+        client_id = await self.check_token(request)
+        username = await self.check_username(request)
+        await self.db.end_verification(client_id, username, -1)
+        raise web.HTTPNoContent()
 
     async def login(self, request):
         username = await self.check_username(request)
