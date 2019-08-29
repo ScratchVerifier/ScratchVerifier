@@ -232,6 +232,9 @@ class Server:
         digest = digest.hexdigest()
         if not hmac.compare_digest(digest, request.headers['X-Hub-Signature']):
             raise web.HTTPUnauthorized()
+        data = await request.json()
+        if data['ref'] != 'refs/heads/master':
+            raise web.HTTPNoContent() #success, but no action
         os.system('cd {} && git pull --rebase origin'.format(
             os.path.dirname(__file__)
         ))
