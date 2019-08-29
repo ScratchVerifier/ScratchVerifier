@@ -76,7 +76,7 @@
     if (confirm("Log out all sessions?")){
       document.querySelector("#dashboard").style.display = "none"
       document.querySelector(".loading").style.display = ""
-      fetch("/username/" + window.username + "/logout?session=" + localStorage.getItem("token"),{method:"POST"}).then(e=>{
+      fetch("/users/" + window.username + "/logout?session=" + localStorage.getItem("token"),{method:"POST"}).then(e=>{
         localStorage.removeItem('token');
         location.reload()
       })
