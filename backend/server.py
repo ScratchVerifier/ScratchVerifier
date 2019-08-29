@@ -160,7 +160,7 @@ class Server:
 
     async def logout_user(self, request):
         session_id = await self.check_session(request)
-        data = User(await self.db.get_client(session_id))
+        data = User(**(await self.db.get_client(session_id)))
         username = await self.check_username(request)
         if username != data.username:
             raise web.HTTPForbidden()
