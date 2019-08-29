@@ -24,10 +24,12 @@ class Server:
             web.delete('/verify/{username}', self.unverify),
             web.post('/users/{username}/login', self.login),
             web.post('/users/{username}/finish-login', self.finish_login),
+            web.post('/users/{username}/logout', self.logout_user),
             web.get('/session/{session}', self.get_user),
             web.put('/session/{session}', self.put_user),
             web.patch('/session/{session}', self.reset_token),
             web.delete('/session/{session}', self.del_user),
+            web.post('/session/{session}/logout', self.logout)
             web.get('/usage', self.logs),
             web.get('/usage/{logid}', self.log),
             web.post('/webhook', self.gh_hook),
@@ -156,6 +158,14 @@ class Server:
         else:
             raise web.HTTPUnauthorized()
 
+    async def logout_user(self, request):
+        session_id = await self.check_session(request)
+        data = User(await self.db.get_client(session_id))
+        username = await self.check_username(request)
+        if username != data.username:
+            raise web.HTTPForbidden()
+        await self.db.logout_user(username)
+
     async def check_session(self, request):
         session = request.match_info.get('session', request.query.get('session',
                                                                       None))
@@ -192,6 +202,11 @@ class Server:
     async def del_user(self, request):
         session_id = await self.check_session(request)
         await self.db.del_client(session_id)
+        raise web.HTTPNoContent()
+
+    async def logout(self, request):
+        session_id = await self.check_session(request)
+        await self.db.logout(session_id)
         raise web.HTTPNoContent()
 
     async def logs(self, request):

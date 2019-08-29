@@ -110,6 +110,14 @@ WHERE session_id=?', (session_id,))
             return True
         return False
 
+    async def logout(self, session_id):
+        await self.db.execute('DELETE FROM scratchverifier_sessions \
+WHERE session_id=?', (session_id,))
+
+    async def logout_user(self, username):
+        await self.db.execute('DELETE FROM scratchverifier_sessions \
+WHERE username=?', (username,))
+
     ### TABLE: usage ###
 
     async def start_verification(self, client_id, username):

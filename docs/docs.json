@@ -178,6 +178,32 @@
     },
     {
       "type": "endpoint",
+      "name": "Logout All Sessions",
+      "method": "POST",
+      "path": "/users/{username}/logout",
+      "params": {
+        "username": {
+          "type": "string",
+          "desc": "The username to log out",
+          "query": false
+        },
+        "session": {
+          "type": "integer",
+          "desc": "REQUIRED: Session ID returned by <a href=\"#finish-logging-in-endpoint\">Finish Logging In</a> endpoint",
+          "query": true
+        }
+      },
+      "http": {
+        "204 No Content": "successfully logged out",
+        "400 Bad Request": "username is invalid by Scratch rules",
+        "401 Unauthorized": "<code>session</code> invalid or not specified",
+        "403 Forbidden": "username does not match session",
+        "404 Not Found": "username 404ed on Scratch API"
+      },
+      "returns": null
+    },
+    {
+      "type": "endpoint",
       "name": "Get Client Info",
       "method": "GET",
       "path": "/session/{session ID}",
@@ -261,6 +287,24 @@
       },
       "http": {
         "204 No Content": "client was successfully deleted",
+        "401 Unauthorized": "<code>session ID</code> invalid or not specified"
+      },
+      "returns": null
+    },
+    {
+      "type": "endpoint",
+      "name": "Logout Session",
+      "method": "POST",
+      "path": "/session/{session ID}/logout",
+      "params": {
+        "session ID": {
+          "type": "string",
+          "desc": "Session ID returned by <a href=\"#finish-logging-in-endpoint\">Finish Logging In</a> endpoint",
+          "query": false
+        }
+      },
+      "http": {
+        "204 No Content": "successfully logged out",
         "401 Unauthorized": "<code>session ID</code> invalid or not specified"
       },
       "returns": null

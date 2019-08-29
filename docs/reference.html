@@ -123,6 +123,30 @@
 }</td></tr>
 </table>
 </div></div>
+<h3 id="logout-all-sessions-endpoint">Logout All Sessions Endpoint</h3>
+<div class="endpoint">
+<div class="method-path" onclick="showOrHide(this)"><span class="method">POST</span> <code>/users/<span class="param">{username}</span>/logout</code> <a href="#authorization"><img src="https://image.flaticon.com/icons/png/512/61/61457.png" title="Authorization necessary" /></a></div>
+<div style="display: none">
+<table><caption>URL Params</caption>
+<tr><th>Field</th><th>Type</th><th>Description</th>
+<tr><td>username</td><td>string</td><td>The username to log out</td></tr>
+</table>
+<table><caption>Query String Params</caption>
+<tr><th>Field</th><th>Type</th><th>Description</th>
+<tr><td>session</td><td>integer</td><td>REQUIRED: Session ID returned by <a href="#finish-logging-in-endpoint">Finish Logging In</a> endpoint</td></tr>
+</table>
+<table><caption>HTTP statuses</caption>
+<tr><th>Status</th><th>Meaning</th>
+<tr><td>204 No Content</td><td>successfully logged out</td></tr>
+<tr><td>400 Bad Request</td><td>username is invalid by Scratch rules</td></tr>
+<tr><td>401 Unauthorized</td><td><code>session</code> invalid or not specified</td></tr>
+<tr><td>403 Forbidden</td><td>username does not match session</td></tr>
+<tr><td>404 Not Found</td><td>username 404ed on Scratch API</td></tr>
+</table>
+<table><caption>Returns nothing</caption>
+<tr><td class="pre"></td></tr>
+</table>
+</div></div>
 <h3 id="get-client-info-endpoint">Get Client Info Endpoint</h3>
 <div class="endpoint">
 <div class="method-path" onclick="showOrHide(this)"><span class="method">GET</span> <code>/session/<span class="param">{session ID}</span></code> <a href="#authorization"><img src="https://image.flaticon.com/icons/png/512/61/61457.png" title="Authorization necessary" /></a></div>
@@ -199,6 +223,23 @@
 <table><caption>HTTP statuses</caption>
 <tr><th>Status</th><th>Meaning</th>
 <tr><td>204 No Content</td><td>client was successfully deleted</td></tr>
+<tr><td>401 Unauthorized</td><td><code>session ID</code> invalid or not specified</td></tr>
+</table>
+<table><caption>Returns nothing</caption>
+<tr><td class="pre"></td></tr>
+</table>
+</div></div>
+<h3 id="logout-session-endpoint">Logout Session Endpoint</h3>
+<div class="endpoint">
+<div class="method-path" onclick="showOrHide(this)"><span class="method">POST</span> <code>/session/<span class="param">{session ID}</span>/logout</code> <a href="#authorization"><img src="https://image.flaticon.com/icons/png/512/61/61457.png" title="Authorization necessary" /></a></div>
+<div style="display: none">
+<table><caption>URL Params</caption>
+<tr><th>Field</th><th>Type</th><th>Description</th>
+<tr><td>session ID</td><td>string</td><td>Session ID returned by <a href="#finish-logging-in-endpoint">Finish Logging In</a> endpoint</td></tr>
+</table>
+<table><caption>HTTP statuses</caption>
+<tr><th>Status</th><th>Meaning</th>
+<tr><td>204 No Content</td><td>successfully logged out</td></tr>
 <tr><td>401 Unauthorized</td><td><code>session ID</code> invalid or not specified</td></tr>
 </table>
 <table><caption>Returns nothing</caption>
@@ -350,6 +391,11 @@
 </ul>
 </li>
 <li>
+<div><a href="#logout-all-sessions-endpoint">Logout&nbsp;All&nbsp;Sessions&nbsp;Endpoint</a>
+<ul>
+</ul>
+</li>
+<li>
 <div><a href="#get-client-info-endpoint">Get&nbsp;Client&nbsp;Info&nbsp;Endpoint</a>
 <ul>
 </ul>
@@ -366,6 +412,11 @@
 </li>
 <li>
 <div><a href="#delete-client-endpoint">Delete&nbsp;Client&nbsp;Endpoint</a>
+<ul>
+</ul>
+</li>
+<li>
+<div><a href="#logout-session-endpoint">Logout&nbsp;Session&nbsp;Endpoint</a>
 <ul>
 </ul>
 </li>
