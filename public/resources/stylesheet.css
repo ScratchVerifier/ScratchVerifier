@@ -75,3 +75,10 @@ input {
 .submit:active {
   	background-color: #fff7db;
 	}
+  * {
+        transition-duration: 0.4s;
+  }
+input:focus, .submit:focus, *:focus {
+  outline:none;
+  box-shadow:grey 0 0 0 2px;
+}
