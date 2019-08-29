@@ -29,7 +29,7 @@ class Server:
             web.put('/session/{session}', self.put_user),
             web.patch('/session/{session}', self.reset_token),
             web.delete('/session/{session}', self.del_user),
-            web.post('/session/{session}/logout', self.logout)
+            web.post('/session/{session}/logout', self.logout),
             web.get('/usage', self.logs),
             web.get('/usage/{logid}', self.log),
             web.post('/webhook', self.gh_hook),
@@ -210,7 +210,7 @@ class Server:
         raise web.HTTPNoContent()
 
     async def logs(self, request):
-        if request.query.get('limit', 100) > 500:
+        if int(request.query.get('limit', 100)) > 500:
             raise web.HTTPForbidden()
         return web.json_response(await self.db.get_logs(**request.query))
 

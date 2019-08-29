@@ -180,6 +180,7 @@ VALUES (?, ?, ?, ?)', (client_id, username, int(time.time()), 3 - succ))
         for k, v in params.items():
             if k in {'start', 'before', 'end', 'after', 'client_id', 'type'}:
                 params[k] = int(v)
+        limit = int(limit)
         await self.db.execute(query, {'limit': limit, **params})
         rows = await self.db.fetchall()
         return [dict(i) for i in rows]
