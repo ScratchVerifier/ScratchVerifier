@@ -9,7 +9,23 @@
     <script>function smilejsCallback(){
       smilejs.paper.rippleColor = "rgba(0,0,0,0.25)"
     }</script><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+a {
+    color:mediumblue;
+    text-decoration:none;
+    font-weight:bolder;
+}
 
+li {
+    display: block;
+}
+li::before {
+    content:"• ";
+}
+a:hover {
+    text-decoration:underline;
+}
+</style>
 	</head>
 
 	<body style= "margin:0">
@@ -32,7 +48,7 @@
 				</ul>
 			</h2><br/><br/>
 			<h2>The idea comes from <a href="https://github.com/Kenny2github">Kenny2github</a>.</h2>
-		<button class="smilejs-ripple submit"><a href="https://github.com/ScratchVerifier/ScratchVerifier">View on Github</a></button>
+		<a href="https://github.com/ScratchVerifier/ScratchVerifier"><button class="smilejs-ripple submit">View on Github</button></a>
 		</div>
 			<div class="Footer"></div>
 
