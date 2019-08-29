@@ -1,7 +1,7 @@
 body {
 	background: #f2eee2
 	}
-	
+
 /*navbar*/
 .navbar {
 	font-family: Consolas, Arial, Sans-Serif;
@@ -24,6 +24,7 @@ body {
 	text-decoration: none;
 	text-align: center;
 	float: right;
+
 	}
 .hbutton:hover {
 	background-color: #fff6d6;
@@ -32,8 +33,9 @@ body {
 	float: left;
 	color: black;
 	margin-top: 0px;
-	padding-top: 10px;
-	padding-left: 20px;
+	padding-top: 25px;
+	padding-left: 10px;
+  font-size:20px
 	}
 /*navbar*/
 
@@ -46,29 +48,36 @@ body {
 	text-align: center;
 	font-family: consolas, arial, sans-serif
 	}
-	
-#Username {
+
+input {
 	width: 50%;
 	padding:12px 20px;
 	border:2px solid white;
   	border-radius:4px;
 	background-color:#F0F0F0;
 	}
-	
-#submit {
+
+.submit {
 	background-color: #fffcf2;
 	font-size: 16px;
-	padding: 12px 1%;
+	padding: 12px;
 	border-radius: 12px;
 	width: 10%;
 	border:2px solid black;
 	margin-left: 5px;
+  min-width: fit-content;
 	}
-				
-#submit:hover {
+
+.submit:hover {
   	background-color: #fff7db;
 	}
-			
-#submit:active {
+
+.submit:active {
   	background-color: #fff7db;
 	}
+  * {
+  }
+input:focus, .submit:focus, *:focus {
+  outline:none;
+  box-shadow:grey 0 0 0 2px;
+}

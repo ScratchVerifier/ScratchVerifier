@@ -1,0 +1,121 @@
+<!doctype html>
+<html>
+<head>
+    <link rel="stylesheet" href="main.css" />
+    <script src="main.js"></script>
+    <script>
+    if (location.pathname === "/site/docs"){location.pathname = "/site/docs/"};
+    </script>
+</head>
+<body><div id="body">
+
+<h1 id="scratchverifier-registration">ScratchVerifier Registration</h1>
+<p>This page contains walkthroughs for registering/handling your registration with this API.</p>
+<h2 id="registering-through-the-website">Registering Through the Website</h2>
+<p>This is how to register with this API through the <a href="http://scratchverifier.ddns.net:8888/site/">website</a>.</p>
+<ol>
+<li>Visit the website.</li>
+<li>Click "Login/Register" at the top right</li>
+<li>You will be presented with a verification code. (That's right, we use our own API to register people with it!)</li>
+<li>Post this code on your own profile comments</li>
+<li>Click "Continue"</li>
+<li>You will then be logged in</li>
+<li>You will be presented with a button saying "Create client". Click it</li>
+<li>You will be shown your client ID and a button to copy your token.</li>
+<li>Put your client ID and token into your app's configuration. Done!</li>
+</ol>
+<p>At any point, if you wish to view your info again, simply login (if necessary) and you will be presented with it.</p>
+<h2 id="registering-through-the-api">Registering Through the API</h2>
+<p>The API itself provides endpoints to register yourself. Here's how to use them:</p>
+<ol>
+<li>Send an HTTP <span class="method">POST</span> request to <code>/users/<span class="param">{yourusername}</span>/login</code></li>
+<li>The API will send you a <a href="reference.html#verification-object">Verification</a> object containing a code</li>
+<li>Post this code on your own profile comments</li>
+<li>Send an HTTP <span class="method">POST</span> request to <code>/users/<span class="param">{yourusername}</span>/finish-login</code></li>
+<li>You will receive a <a href="reference.html#session-object">Session</a> object containing a single integer. This is your session ID; it lasts for a year</li>
+<li>Assuming you haven't already created a client, send an HTTP <span class="method">PUT</span> request to <code>/session/<span class="param">{session}</span></code></li>
+<li>You will receive a <a href="reference.html#user-object">User</a> object containing your client ID and token</li>
+<li>Put your client ID and token into your app's configuration. Done!</li>
+</ol>
+<p>At any point, if it becomes necessary to fetch your info again, simply send an HTTP <span class="method">GET</span> request to <code>/session/<span class="param">{session}</span></code> and you will receive it. If you receive a 401 Unauthorized response, you need to get another session ID by following steps 1-5.</p>
+<h2 id="resetting-your-token">Resetting your Token</h2>
+<p>If you think your token has been compromised, you can reset your token using the website:</p>
+<ol>
+<li>Visit the website. If presented with your current info, skip to step 8</li>
+<li>Click "Login/Register" at the top right</li>
+<li>You will be presented with a verification code</li>
+<li>Post this code on your own profile comments</li>
+<li>Click "Continue"</li>
+<li>You will then be logged in</li>
+<li>You will be presented with your client info</li>
+<li>Click the button labelled "Reset token"</li>
+<li>Copy your new token and update your app's configuration. Done!</li>
+</ol>
+<p>Or using the API:</p>
+<ol>
+<li><span class="method">GET</span> <code>/session/<span class="param">{session}</span></code> to fetch your info</li>
+<li>If you receive your info, skip to step 8. Otherwise, continue with step 3</li>
+<li>Send an HTTP <span class="method">POST</span> request to <code>/users/<span class="param">{yourusername}</span>/login</code></li>
+<li>The API will send you a <a href="reference.html#verification-object">Verification</a> object containing a code</li>
+<li>Post this code on your own profile comments</li>
+<li>Send an HTTP <span class="method">POST</span> request to <code>/users/<span class="param">{yourusername}</span>/finish-login</code></li>
+<li>You will receive a <a href="reference.html#session-object">Session</a> object containing a single integer. This is your session ID; it lasts for a year</li>
+<li>Send an HTTP <span class="method">PATCH</span> request to <code>/session/<span class="param">{session}</span></code></li>
+<li>You will receive a new <a href="reference.html#user-object">User</a> object containing your client ID and updated token</li>
+<li>Update your token in your app's configuration. Done!</li>
+</ol>
+<h2 id="deleting-your-account">Deleting your Account</h2>
+<p>We're sorry to see you go! You can deregister from the API through the website:</p>
+<ol>
+<li>Visit the website. If presented with your current info, skip to step 8</li>
+<li>Click "Login/Register" at the top right</li>
+<li>You will be presented with a verification code</li>
+<li>Post this code on your own profile comments</li>
+<li>Click "Continue"</li>
+<li>You will then be logged in</li>
+<li>You will be presented with your client info</li>
+<li>Click the button labelled "Delete Account"</li>
+<li>Click the confirmation. :(</li>
+</ol>
+<p>Or using the API:</p>
+<ol>
+<li><span class="method">GET</span> <code>/session/<span class="param">{session}</span></code> to fetch your info</li>
+<li>If you receive your info, skip to step 8. Otherwise, continue with step 3</li>
+<li>Send an HTTP <span class="method">POST</span> request to <code>/users/<span class="param">{yourusername}</span>/login</code></li>
+<li>The API will send you a <a href="reference.html#verification-object">Verification</a> object containing a code</li>
+<li>Post this code on your own profile comments</li>
+<li>Send an HTTP <span class="method">POST</span> request to <code>/users/<span class="param">{yourusername}</span>/finish-login</code></li>
+<li>You will receive a <a href="reference.html#session-object">Session</a> object containing a single integer. This is your session ID; it lasts for a year</li>
+<li>Send an HTTP <span class="method">DELETE</span> request to <code>/session/<span class="param">{session}</span></code></li>
+<li>You will receive a 204 No Content response. :(</li>
+</ol>
+<p><i>Note: This only deregisters your client from the API. You are still free to re-register later. Resetting your token is almost like deregistering and re-registering again.</i></p>
+</div><div id="contents"><h1>Navigation</h1>
+<div><a href="#scratchverifier-registration">ScratchVerifier&nbsp;Registration</a>
+<ul>
+<li>
+<div><a href="#registering-through-the-website">Registering&nbsp;Through&nbsp;the&nbsp;Website</a>
+<ul>
+</ul>
+</li>
+<li>
+<div><a href="#registering-through-the-api">Registering&nbsp;Through&nbsp;the&nbsp;API</a>
+<ul>
+</ul>
+</li>
+<li>
+<div><a href="#resetting-your-token">Resetting&nbsp;your&nbsp;Token</a>
+<ul>
+</ul>
+</li>
+<li>
+<div><a href="#deleting-your-account">Deleting&nbsp;your&nbsp;Account</a>
+<ul>
+</ul>
+</li>
+</ul>
+<div><a href="index.html">Welcome&nbsp;to&nbsp;ScratchVerifier</a></div>
+<div><a href="reference.html">API&nbsp;Reference</a></div>
+<div><a href="usage.html">ScratchVerifier&nbsp;Usage</a></div>
+</div></body>
+</html>
