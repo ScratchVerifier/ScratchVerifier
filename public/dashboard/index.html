@@ -64,6 +64,24 @@
       console.error('Async: Could not copy text: ', err);
     });
   }
+  function logout(){
+    document.querySelector("#dashboard").style.display = "none"
+    document.querySelector(".loading").style.display = ""
+    fetch("/session/" + localStorage.getItem("token") + "/logout",{method:"POST"}).then(e=>{
+      localStorage.removeItem('token');
+      location.reload()
+    })
+  }
+  function logoutAll(){
+    if (confirm("Log out all sessions?")){
+      document.querySelector("#dashboard").style.display = "none"
+      document.querySelector(".loading").style.display = ""
+      fetch("/username/" + window.username + "/logout?session=" + localStorage.getItem("token"),{method:"POST"}).then(e=>{
+        localStorage.removeItem('token');
+        location.reload()
+      })
+    }
+  }
   function createApp(){
     document.querySelector("#createApp").style.display = "none"
     document.querySelector(".loading").style.display = ""
@@ -108,7 +126,7 @@ window.onload = ()=>{
         document.querySelector("#dashboard").style.display = ""
         document.querySelector("#appID").value = e.client_id
         document.querySelector("#token").value = e.token
-
+        window.username = e.username
       }
     })
   }
@@ -130,7 +148,8 @@ window.onload = ()=>{
 <h2>Delete app</h2>
 <button onclick="deleteApp()" class="smilejs-ripple submit">Delete Account</button>
 <h2>Sign out</h2>
-<button onclick="localStorage.removeItem('token');location.reload()" class="smilejs-ripple submit">Sign out</button>
+<button onclick="logout()" class="smilejs-ripple submit">Sign out</button><br><br>
+<button onclick="logoutAll()" class="smilejs-ripple submit">Sign out from all devices</button>
 </div>
 </div>
 
