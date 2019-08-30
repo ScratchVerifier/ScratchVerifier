@@ -58,7 +58,8 @@
     },
     {
       "type": "endpoint",
-      "name": "Start Verification",
+      "name": "Start/Renew Verification",
+      "desc": "Request a new verification code for a user. Only one code per user per client - if this endpoint is used again before the <a href=\"#finish-verification-endpoint\">Finish Verification</a> endpoint is used, this will instead renew the 30-minute expiry on the code and return the original code.",
       "method": "PUT",
       "path": "/verify/{username}",
       "params": {
@@ -84,6 +85,7 @@
     {
       "type": "endpoint",
       "name": "Finish Verification",
+      "desc": "Confirm verification for a user. Returns 204 No Content on successful verification, 403 Forbidden on failure.",
       "method": "POST",
       "path": "/verify/{username}",
       "params": {
@@ -97,6 +99,7 @@
         "204 No Content": "verification successful",
         "400 Bad Request": "username is invalid by Scratch rules",
         "401 Unauthorized": "missing/invalid <a href=\"#authorization\">authorization</a>",
+        "403 Forbidden": "verification unsuccessful",
         "404 Not Found": "username 404ed on Scratch API OR user is not currently being verified"
       },
       "auth": true,
@@ -105,6 +108,7 @@
     {
       "type": "endpoint",
       "name": "Invalidate Verification",
+      "desc": "Cancel verifying a user.",
       "method": "DELETE",
       "path": "/verify/{username}",
       "params": {
@@ -133,6 +137,7 @@
     {
       "type": "endpoint",
       "name": "Start Logging In",
+      "desc": "Begin the process of logging in to the registration API.",
       "method": "POST",
       "path": "/users/{username}/login",
       "params": {
@@ -156,6 +161,7 @@
     {
       "type": "endpoint",
       "name": "Finish Logging In",
+      "desc": "Finish the process of logging in. Returns a <a href=\"#session-object\">Session</a> object on success.",
       "method": "POST",
       "path": "/users/{username}/finish-login",
       "params": {
@@ -179,6 +185,7 @@
     {
       "type": "endpoint",
       "name": "Logout All Sessions",
+      "desc": "Immediately invalidate all sessions under this username.",
       "method": "POST",
       "path": "/users/{username}/logout",
       "params": {
@@ -205,6 +212,7 @@
     {
       "type": "endpoint",
       "name": "Get Client Info",
+      "desc": "Get your client ID, token, and username. Returns a <a href=\"#user-object\">User</a> object on success.",
       "method": "GET",
       "path": "/session/{session ID}",
       "params": {
@@ -229,6 +237,7 @@
     {
       "type": "endpoint",
       "name": "Create Client",
+      "desc": "If this user does not own a client yet, create and return one.",
       "method": "PUT",
       "path": "/session/{session ID}",
       "params": {
@@ -253,6 +262,7 @@
     {
       "type": "endpoint",
       "name": "Reset Token",
+      "desc": "If you suspect that your token has been compromised, reset it through this endpoint.",
       "method": "PATCH",
       "path": "/session/{session ID}",
       "params": {
@@ -276,6 +286,7 @@
     {
       "type": "endpoint",
       "name": "Delete Client",
+      "desc": "Deregister from the API. Returns 204 No Content on success.",
       "method": "DELETE",
       "path": "/session/{session ID}",
       "params": {
@@ -294,6 +305,7 @@
     {
       "type": "endpoint",
       "name": "Logout Session",
+      "desc": "Invalidate this session ID.",
       "method": "POST",
       "path": "/session/{session ID}/logout",
       "params": {
@@ -319,52 +331,54 @@
     {
       "type": "endpoint",
       "name": "Get Usage Logs",
+      "desc": "Get logs of who has used this API to verify what user. These logs are accessible by anyone to head off abuse.",
       "method": "GET",
       "path": "/usage",
       "params": {
-        "limit=n": {
+        "limit": {
           "type": "integer",
-          "desc": "Return at most <code>n</code> logs. <code>n</code> cannot be greater than 500",
+          "desc": "Return at most <code>limit</code> logs. <code>limit</code> cannot be greater than 500",
           "query": true
         },
-        "start=n": {
+        "start": {
           "type": "integer",
-          "desc": "Return logs that happened before (not including) the log with ID <code>n</code>. Usually used for getting the next page of logs. This does not have to be a valid ID (though it usually is)",
+          "desc": "Return logs that happened before (not including) the log with ID <code>start</code>. Usually used for getting the next page of logs. This does not have to be a valid ID (though it usually is)",
           "query": true
         },
-        "before=n": {
+        "before": {
           "type": "integer",
-          "desc": "Return logs that happened before (and including) the Unix epoch time <code>n</code>",
+          "desc": "Return logs that happened before (and including) the Unix epoch time <code>before</code>",
           "query": true
         },
-        "end=n": {
+        "end": {
           "type": "integer",
-          "desc": "Return logs that happened after (not including) the log with ID <code>n</code>",
+          "desc": "Return logs that happened after (not including) the log with ID <code>end</code>",
           "query": true
         },
-        "after=n": {
+        "after": {
           "type": "integer",
-          "desc": "Return logs that happened after (and including) the Unix epoch time <code>n</code>. Usually used to limit returned logs by time",
+          "desc": "Return logs that happened after (and including) the Unix epoch time <code>after</code>. Usually used to limit returned logs by time",
           "query": true
         },
-        "client_id=n": {
+        "client_id": {
           "type": "integer",
-          "desc": "Only return logs with the client ID <code>n</code>",
+          "desc": "Only return logs with the client ID <code>client_id</code>",
           "query": true
         },
-        "username=name": {
+        "username": {
           "type": "string",
-          "desc": "Only return logs with the username <code>name</code>",
+          "desc": "Only return logs with the username <code>username</code>",
           "query": true
         },
-        "type=n": {
+        "type": {
           "type": "integer",
-          "desc": "Only return logs with the <a href=\"#log-types\">log type</a> <code>n</code>",
+          "desc": "Only return logs with the <a href=\"#log-types\">log type</a> <code>type</code>",
           "query": true
         }
       },
       "http": {
         "200 OK": "returns list of <a href=\"#log-object\">Log</a> objects",
+        "400 Bad Request": "a query param was the wrong type",
         "403 Forbidden": "<code>limit</code> was greater than 500"
       },
       "returns": {
@@ -379,6 +393,7 @@
     {
       "type": "endpoint",
       "name": "Get Usage Log",
+      "desc": "Fetch the information for a single log entry.",
       "method": "GET",
       "path": "/usage/{log ID}",
       "params": {

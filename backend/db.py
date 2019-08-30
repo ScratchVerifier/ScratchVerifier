@@ -125,6 +125,9 @@ WHERE username=?', (username,))
 client_id=? AND username=?', (client_id, username))
         row = await self.db.fetchone()
         if row is not None:
+            await self.db.execute('UPDATE scratchverifier_usage SET expiry=? \
+WHERE client_id=? AND username=? AND code=?', (int(time.time()) + 1800,
+                                               client_id, username, row[0]))
             return row[0]
         code = sha256(
             str(client_id).encode()
