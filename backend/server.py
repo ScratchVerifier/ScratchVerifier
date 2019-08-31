@@ -44,7 +44,7 @@ class Server:
         ])
         self.session = ClientSession()
         self.db = Database(self.session)
-        self.hook_secret = hook_secret
+        self.hook_secret = hook_secret.encode()
         self.discord_hook = discord_hook
         self.name = name
 
