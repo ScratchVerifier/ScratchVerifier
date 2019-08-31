@@ -44,7 +44,7 @@ class Server:
         ])
         self.session = ClientSession()
         self.db = Database(self.session)
-        self.hook_secret = hook_secret
+        self.hook_secret = hook_secret.encode()
         self.discord_hook = discord_hook
         self.name = name
 
@@ -275,9 +275,10 @@ class Server:
     async def gh_hook(self, request):
         if 'X-Hub-Signature' not in request.headers:
             raise web.HTTPUnauthorized()
-        digest = hmac.new(self.hook_secret, await request.read(), 'sha1')
+        algo, hash = request.headers['X-Hub-Signature'].split('=')
+        digest = hmac.new(self.hook_secret, await request.read(), algo)
         digest = digest.hexdigest()
-        if not hmac.compare_digest(digest, request.headers['X-Hub-Signature']):
+        if not hmac.compare_digest(digest, hash):
             raise web.HTTPUnauthorized()
         data = await request.json()
         if data['ref'] != 'refs/heads/master':
