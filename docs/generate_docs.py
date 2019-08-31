@@ -47,6 +47,7 @@ class Things:
             cls._id(thing['name'] + ' Endpoint', contents[-1]['*'][-1]['*']),
             thing['name']
         ))
+        print('<p>%s</p>' % thing['desc'])
         print('<div class="endpoint">')
         path = thing['path']
         has_query = False
@@ -171,11 +172,12 @@ for filename, data in DATA.items():
     <link rel="stylesheet" href="main.css" />
     <script src="main.js"></script>
     <script>
-    if (location.pathname === "/site/docs"){location.pathname = "/site/docs/"};
+    if (location.pathname === "/docs"){location.pathname = "/docs/"};
     </script>
+    <title>%s</title>
 </head>
 <body><div id="body">
-""")
+""" % (data[0]['title'] + ' - ScratchVerifier Documentation'))
     for thing in data:
         getattr(Things, thing['type'])(thing)
     print('</div><div id="contents"><h1>Navigation</h1>')

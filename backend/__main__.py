@@ -9,4 +9,8 @@ from server import Server
 with open('config.json') as f:
     config = json.load(f)
 
-Server(config['hook-secret']).run_sync(config['port'])
+Server(
+    config['hook-secret'],
+    config['discord-hook'],
+    config.get('name', None)
+).run_sync(config['port'])

@@ -2,6 +2,7 @@ import os
 import re
 import time
 from glob import glob
+import traceback
 import hmac
 import asyncio
 import mimetypes
@@ -16,8 +17,8 @@ USERNAME_REGEX = re.compile('[A-Za-z0-9_-]{3,20}')
 COMMENTS_REGEX = re.compile(r"""<div id="comments-\d+" class="comment +" data-comment-id="\d+">.*?<div class="actions-wrap">.*?<div class="name">\s+<a href="/users/([_a-zA-Z0-9-]+)">\1</a>\s+</div>\s+<div class="content">(.*?)</div>""", re.S)
 
 class Server:
-    def __init__(self, hook_secret):
-        self.app = web.Application()
+    def __init__(self, hook_secret, discord_hook, name=None):
+        self.app = web.Application(middlewares=[self.errors])
         self.app.add_routes([
             web.put('/verify/{username}', self.verify),
             web.post('/verify/{username}', self.verified),
@@ -36,11 +37,47 @@ class Server:
             web.get('/site/{path:.*}', self.file_handler),
             web.get('/site/', self.file_handler),
             web.get('/site', self.file_handler),
+            web.get('/docs/{path:.*}', self.docs_handler),
+            web.get('/docs/', self.docs_handler),
+            web.get('/docs', self.docs_handler),
             web.view('/{path:.*}', self.not_found)
         ])
         self.session = ClientSession()
         self.db = Database(self.session)
         self.hook_secret = hook_secret
+        self.discord_hook = discord_hook
+        self.name = name
+
+    @web.middleware
+    async def errors(self, request, handler):
+        print('%s %s %s' % (
+            time.strftime('%Y-%m-%dT%H:%M:%SZ'),
+            request.method,
+            request.path_qs
+        ))
+        try:
+            return await handler(request)
+        except web.HTTPException as exc:
+            raise
+        except Exception as exc:
+            await self.session.post(self.discord_hook, json={
+                'username': '{}ScratchVerifier Errors'.format(
+                    (self.name + "'s ") if self.name else ''
+                ),
+                'embeds': [{
+                    'color': 0xff0000,
+                    'title': '500 Response Sent',
+                    'fields': [
+                        {'name': 'Request Path',
+                         'value': '`%s %s`' % (request.method, request.path_qs),
+                         'inline': False},
+                        {'name': 'Error traceback',
+                         'value': '```%s```' % traceback.format_exc(),
+                         'inline': False}
+                    ]
+                }]
+            })
+            raise
 
     async def run(self, port=DEFAULT_PORT):
         self.runner = web.AppRunner(self.app)
@@ -167,8 +204,8 @@ class Server:
         await self.db.logout_user(username)
 
     async def check_session(self, request):
-        session = request.match_info.get('session', request.query.get('session',
-                                                                      None))
+        session = request.match_info.get('session',
+                                         request.query.get('session', ''))
         if not (session or session.strip()):
             raise web.HTTPUnauthorized()
         try:
@@ -210,9 +247,19 @@ class Server:
         raise web.HTTPNoContent()
 
     async def logs(self, request):
-        if int(request.query.get('limit', 100)) > 500:
+        params = {}
+        for k in {'limit', 'start', 'end', 'before',
+                  'after', 'client_id', 'type'}:
+            if k in request.query:
+                try:
+                    params[k] = int(request.query[k])
+                except ValueError:
+                    raise web.HTTPBadRequest() from None
+        if 'username' in request.query:
+            params['username'] = request.query['username']
+        if params.get('limit', 100) > 500:
             raise web.HTTPForbidden()
-        return web.json_response(await self.db.get_logs(**request.query))
+        return web.json_response(await self.db.get_logs(**params))
 
     async def log(self, request):
         log_id = request.match_info.get('logid', None)
@@ -240,9 +287,10 @@ class Server:
         ))
         raise web.HTTPNoContent()
 
-    async def file_handler(self, request):
-        WEB_ROOT = os.path.join(os.path.dirname(os.path.dirname(__file__)),
-                                'public')
+    async def _file_handler(self, request, WEB_ROOT):
+        WEB_ROOT = os.path.join(os.path.dirname(
+            os.path.dirname(__file__)
+        ), WEB_ROOT)
         PATH = request.match_info.get('path', 'index.html') or 'index.html'
         if '.' not in PATH.split('/')[-1]:
             PATH += '/index.html'
@@ -264,6 +312,12 @@ class Server:
             return web.Response(body=data, content_type=ct[0], charset=ct[1])
         except FileNotFoundError:
             raise web.HTTPNotFound()
+
+    async def file_handler(self, request):
+        return await self._file_handler(request, 'public')
+
+    async def docs_handler(self, request):
+        return await self._file_handler(request, 'docs')
 
     async def not_found(self, request):
         raise web.HTTPNotFound()
