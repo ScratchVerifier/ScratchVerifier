@@ -43,6 +43,8 @@ WHERE session_id=?', (session_id,))
         return row[0]
 
     async def new_client(self, session_id):
+        if session_id == 0: # 0 means debug mode
+            return {'client_id': 0, 'username': 'Kenny2scratch', 'token': ''}
         username = await self.username_from_session(session_id)
         if username is None:
             return None
@@ -56,6 +58,8 @@ token, username) VALUES (?, ?, ?)', (client_id, token, username))
         return {'client_id': client_id, 'token': token, 'username': username}
 
     async def get_client(self, session_id):
+        if session_id == 0: # 0 means debug mode
+            return {'client_id': 0, 'username': 'Kenny2scratch', 'token': ''}
         username = await self.username_from_session(session_id)
         if username is None:
             return None
@@ -67,6 +71,8 @@ WHERE username=?', (username,))
         return dict(row)
 
     async def reset_token(self, session_id):
+        if session_id == 0: # 0 means debug mode
+            return {'client_id': 0, 'username': 'Kenny2scratch', 'token': ''}
         username = await self.username_from_session(session_id)
         if username is None:
             return
@@ -74,6 +80,8 @@ WHERE username=?', (username,))
 WHERE username=?', (token_hex(32), username))
 
     async def del_client(self, session_id):
+        if session_id == 0: # 0 means debug mode
+            return
         username = await self.username_from_session(session_id)
         if username is None:
             return
@@ -95,9 +103,13 @@ scratchverifier_sessions WHERE session_id=?', (session_id,))
             int(time.time()) + 31540000, # 1 year in seconds
             username
         ))
+        await self.db.execute('DELETE FROM scratchverifier_sessions WHERE \
+expiry<=?', (int(time.time()),))
         return session_id
 
     async def get_expired(self, session_id):
+        if session_id == 0: # 0 means debug mode
+            return False
         await self.db.execute('SELECT expiry FROM scratchverifier_sessions \
 WHERE session_id=?', (session_id,))
         expiry = await self.db.fetchone()
@@ -141,6 +153,8 @@ code, username, expiry) VALUES (?, ?, ?, ?)', (client_id, code, username,
         await self.db.execute('INSERT INTO scratchverifier_logs (client_id, \
 username, log_time, log_type) VALUES (?, ?, ?, ?)', (client_id, username,
                                                      int(time.time()), 1))
+        await self.db.execute('DELETE FROM scratchverifier_usage WHERE \
+expiry<=?', (int(time.time()),))
         return code
 
     async def get_code(self, client_id, username):
