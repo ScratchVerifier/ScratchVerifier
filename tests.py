@@ -3,8 +3,8 @@ import sys
 import os
 import unittest
 import requests
-sys.path.append(os.path.join(os.path.dirname(__file__), 'backend'))
-from responses import *
+sys.path.append(os.path.dirname(__file__))
+from backend.responses import *
 
 API_ROOT = 'http://localhost:8888'
 session = requests.session()

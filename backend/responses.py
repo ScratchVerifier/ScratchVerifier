@@ -1,5 +1,3 @@
-import json
-
 class Response(type):
     def __new__(cls, name, bases, attrs):
         def __init__(self, **kwargs):
