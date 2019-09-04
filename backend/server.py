@@ -13,7 +13,7 @@ from responses import *
 DEFAULT_PORT = 8888
 COMMENTS_API = 'https://scratch.mit.edu/site-api/comments/user/{}/\
 ?page=1&salt={}'
-USERNAME_REGEX = re.compile('[A-Za-z0-9_-]{3,20}')
+USERNAME_REGEX = re.compile('^[A-Za-z0-9_-]{3,20}$')
 COMMENTS_REGEX = re.compile(r"""<div id="comments-\d+" class="comment +" data-comment-id="\d+">.*?<div class="actions-wrap">.*?<div class="name">\s+<a href="/users/([_a-zA-Z0-9-]+)">\1</a>\s+</div>\s+<div class="content">(.*?)</div>""", re.S)
 
 class Server:
@@ -40,6 +40,7 @@ class Server:
             web.get('/docs/{path:.*}', self.docs_handler),
             web.get('/docs/', self.docs_handler),
             web.get('/docs', self.docs_handler),
+            web.post('/debug/{dibool}', self.set_debug),
             web.view('/{path:.*}', self.not_found)
         ])
         self.session = ClientSession()
@@ -47,6 +48,9 @@ class Server:
         self.hook_secret = hook_secret.encode()
         self.discord_hook = discord_hook
         self.name = name
+        self.debug = False
+        self._debug = False
+        self.debug_pass = False
 
     @web.middleware
     async def errors(self, request, handler):
@@ -60,6 +64,9 @@ class Server:
         except web.HTTPException as exc:
             raise
         except Exception as exc:
+            if self._debug:
+                print(traceback.format_exc())
+                raise web.HTTPServerError()
             await self.session.post(self.discord_hook, json={
                 'username': '{}ScratchVerifier Errors'.format(
                     (self.name + "'s ") if self.name else ''
@@ -79,8 +86,9 @@ class Server:
             })
             raise
 
-    async def run(self, port=DEFAULT_PORT):
+    async def run(self, port=DEFAULT_PORT, debug=False):
         self.runner = web.AppRunner(self.app)
+        self._debug = debug
         await self.runner.setup()
         site = web.TCPSite(self.runner, '0.0.0.0', port)
         await site.start()
@@ -104,10 +112,10 @@ class Server:
             except:
                 return
 
-    def run_sync(self, port=DEFAULT_PORT):
+    def run_sync(self, port=DEFAULT_PORT, debug=False):
         loop = asyncio.get_event_loop()
         try:
-            loop.run_until_complete(self.run(port))
+            loop.run_until_complete(self.run(port, debug))
             loop.run_until_complete(self._wakeup())
         except KeyboardInterrupt:
             pass
@@ -115,6 +123,8 @@ class Server:
             loop.run_until_complete(self.stop())
 
     async def check_token(self, request):
+        if self.debug:
+            return 0
         if 'Authorization' not in request.headers:
             raise web.HTTPUnauthorized()
         auth = BasicAuth.decode(request.headers['Authorization'])
@@ -124,9 +134,11 @@ class Server:
         return client_id
 
     async def check_username(self, request):
-        username = request.match_info.get('username', None)
+        username = request.match_info.get('username', '')
         if not re.match(USERNAME_REGEX, username):
             raise web.HTTPBadRequest()
+        if self.debug:
+            return username.casefold()
         async with self.session.get(USERS_API.format(username)) as resp:
             if resp.status != 200:
                 raise web.HTTPNotFound()
@@ -141,9 +153,15 @@ class Server:
         ).d())
 
     async def _verified(self, client_id, username):
+        if self.debug_pass:
+            await self.db.end_verification(client_id, username, True)
+            return True
         code = await self.db.get_code(client_id, username)
         if not code:
             raise web.HTTPNotFound()
+        if self.debug:
+            await self.db.end_verification(client_id, username, False)
+            return False
         async with self.session.get(COMMENTS_API.format(
             username, int(time.time())
         )) as resp:
@@ -204,6 +222,8 @@ class Server:
         await self.db.logout_user(username)
 
     async def check_session(self, request):
+        if self.debug:
+            return int(request.match_info['session'])
         session = request.match_info.get('session',
                                          request.query.get('session', ''))
         if not (session or session.strip()):
@@ -228,6 +248,8 @@ class Server:
         data = await self.db.get_client(session_id)
         if data is not None:
             raise web.HTTPConflict()
+        if self.debug:
+            session_id = 0 #prevent fake non-conflict debug IDs from registering
         data = await self.db.new_client(session_id)
         return web.json_response(data)
 
@@ -286,6 +308,13 @@ class Server:
         os.system('cd {} && git pull --rebase origin'.format(
             os.path.dirname(__file__)
         ))
+        raise web.HTTPNoContent()
+
+    async def set_debug(self, request):
+        if not self._debug:
+            raise web.HTTPNotFound()
+        val = int(request.match_info['dibool'])
+        self.debug, self.debug_pass = val & 1, val & 2
         raise web.HTTPNoContent()
 
     async def _file_handler(self, request, WEB_ROOT):
