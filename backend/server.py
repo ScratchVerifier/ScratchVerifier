@@ -336,8 +336,18 @@ class Server:
         try:
             with open(FILE, 'rb') as f:
                 range = request.http_range
-                f.seek(range.start or 0)
-                data = f.read(((range.stop or 0) - (range.start or 0)) or -1)
+                if range.stop:
+                    if range.start:
+                        f.seek(range.start)
+                        rsize = range.stop - range.start
+                    else:
+                        rsize = range.stop
+                elif range.start:
+                    f.seek(range.start)
+                    rsize = -1
+                else:
+                    rsize = -1
+                data = f.read(rsize)
             ct = mimetypes.guess_type(PATH)
             return web.Response(body=data, content_type=ct[0], charset=ct[1])
         except FileNotFoundError:
