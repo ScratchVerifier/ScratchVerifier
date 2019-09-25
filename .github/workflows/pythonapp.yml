@@ -13,11 +13,12 @@ jobs:
       uses: actions/setup-python@v1
       with:
         python-version: 3.7
-    - name: Install dependencies
+    - name: Install dependencies & Test
       run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
+        python3 -m pip install --upgrade pip
+        pip3 install -r requirements.txt
         cd backend
         echo '{"port":8888,"hook-secret":"","name":"","discord-hook":""}' > config.json
         python3 . --debug &
+        sleep 3
         python3 ../tests.py
