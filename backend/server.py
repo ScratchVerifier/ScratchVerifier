@@ -327,11 +327,11 @@ class Server:
         FILE = os.path.join(WEB_ROOT, PATH)
         if request.if_modified_since:
             if os.path.getmtime(FILE) <= \
-                    request.if_modified_since.total_seconds():
+                    request.if_modified_since.timestamp():
                 raise web.HTTPNotModified()
         if request.if_unmodified_since:
             if os.path.getmtime(FILE) > \
-                    request.if_unmodified_since.total_seconds():
+                    request.if_unmodified_since.timestamp():
                 raise web.HTTPPreconditionFailed()
         try:
             with open(FILE, 'rb') as f:
