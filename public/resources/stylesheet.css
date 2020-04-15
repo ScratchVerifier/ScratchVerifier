@@ -81,3 +81,34 @@ input:focus, .submit:focus, *:focus {
   outline:none;
   box-shadow:grey 0 0 0 2px;
 }
+
+/*footer*/
+.footer {
+	background: #fffcf2;
+	width: 100%;
+	padding-top: 10px;
+	padding-bottom: 10px;
+	font-family: Consolas, Arial, Sans-Serif;
+	text-align: center;
+	font-size: 20px;
+	color:black;
+	}
+
+.footlink:link {
+	color: inherit;
+	background-color: transparent;
+	text-decoration: underline;
+	}
+
+.footlink:visited {
+	color: inherit;
+	background-color: transparent;
+	text-decoration: underline;
+	}
+	
+.footlink:hover {
+	color: blue;
+	background-color: transparent;
+	text-decoration: underline;
+	}	
+/*footer*/
