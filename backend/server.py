@@ -37,6 +37,7 @@ class Server:
             web.get('/site/{path:.*}', self.file_handler),
             web.get('/site/', self.file_handler),
             web.get('/site', self.file_handler),
+            web.get('/', self.redir_root),
             web.get('/docs/{path:.*}', self.docs_handler),
             web.get('/docs/', self.docs_handler),
             web.get('/docs', self.docs_handler),
@@ -127,8 +128,11 @@ class Server:
             return 0
         if 'Authorization' not in request.headers:
             raise web.HTTPUnauthorized()
-        auth = BasicAuth.decode(request.headers['Authorization'])
-        client_id = int(auth.login)
+        try:
+            auth = BasicAuth.decode(request.headers['Authorization'])
+            client_id = int(auth.login)
+        except ValueError:
+            raise web.HTTPUnauthorized() from None
         if not await self.db.client_matches(client_id, auth.password):
             raise web.HTTPUnauthorized()
         return client_id
@@ -358,6 +362,9 @@ class Server:
 
     async def docs_handler(self, request):
         return await self._file_handler(request, 'docs')
+
+    async def redir_root(self, request):
+        raise web.HTTPMovedPermanently('/site')
 
     async def not_found(self, request):
         raise web.HTTPNotFound()
