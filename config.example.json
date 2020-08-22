@@ -1,0 +1,1 @@
+{"port":8888,"hook-secret":"gh hook secret, used for auto deployment, optional","name":"instance owner name, used for error logging, optional","discord-hook":"used for logging, optional"}
