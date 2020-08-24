@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html style="width: 100%">
+	<head>
+		<title>ScratchVerifier Admin</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link rel="shortcut icon" type="image/png" href="/site/resources/favicon.ico">
+		<style>
+			* {
+			font-family: sans-serif;	
+			}
+			
+			header {
+				background-color: #01B5DC;
+				padding: 20px;
+				color: white;
+			}
+			
+			.headertitle {
+				margin: 0px;
+			}
+			
+			.title {
+				text-align: center;	
+			}
+			
+			.content {
+				display: flex;
+				justify-content: space-between;
+				align-items: flex-start;
+				flex-wrap: wrap;
+				padding: 30px;
+			}
+			
+			.lookup {
+				width: 350px;
+				border: 2px solid black;
+				padding: 10px;
+				margin-bottom: 10px;
+			}
+			
+			.IDinput {
+				width: 97%;
+				height: 35px;
+				border: 2px solid black;
+				padding: 3px;
+				border-radius: 4px;
+			}
+			
+			.lookupbutton {
+				float: right;
+				background-color: #01B5DC;
+				color: white;
+				padding: 10px;
+				border: none;
+				border-radius: 5px;
+				margin: 10px 0px 0 5px;
+			}
+			
+			.lookupbutton:hover {
+				background-color: #009dbf; 	
+			}
+			
+			.logs {
+				padding: 10px;
+				background-color: #bbbbbb;
+				width: 1000px;
+			}
+			
+			.logbox {
+				width: 110px;
+				background-color: white;
+				border: 2px solid black;
+				padding: 4px;
+				border-radius: 3px;
+				margin-top: 5px;
+			}
+			
+			.fetchbutton {
+				width: 50px;
+				background-color: white;
+				border: 2px solid black;
+				color: black;
+				padding: 4px;
+				border-radius: 10px;
+				margin: 5px 0 0 10px;
+				font-weight: 700;
+			}
+			
+			.fetchbutton:hover {
+				background-color: #e8e8e8; 	
+			}
+			
+			.logstable {
+				width: 100%;
+				height: 400px;
+			}
+			
+			table, th, td {
+				border: 2px solid black;
+				border-collapse: collapse;
+				text-align: left;
+				padding: 3px;
+			}
+			
+			th {
+				height: 20px;	
+			}
+		</style>
+	</head>
+	<body style="margin: 0; width: 100%">
+		<header>
+			<h1 class="headertitle">ScratchVerifier Admin</h1>
+		</header>
+		<h2 class="title">Main Panel</h2>
+		<div class="content">
+			<div class="lookup">
+				<h3 style="margin-top: 0px;">Lookup User By ID</h3>
+				<input type="text" placeholder="User ID" class="IDinput">
+				<button class="lookupbutton">Lookup</button>
+			</div>
+			
+			<div class="logs">
+				<input type="text" class="logbox" id="AppID1" placeholder="App ID">
+				<input type="text" class="logbox" id="username" placeholder="Username">
+				<input type="text" class="logbox" id="AppID2" placeholder="App ID">
+				<input type="text" class="logbox" id="before" placeholder="Before">
+				<input type="text" class="logbox" id="after" placeholder="After">
+				<input type="text" class="logbox" id="startend" placeholder="Start-End">
+				<input type="text" class="logbox" id="limit" placeholder="Limit">
+				<button class="fetchbutton">Fetch</button>
+				<br>
+				<br>
+				<table class="logstable">
+					<tr>
+						<th>ID</th>
+						<th>Client ID</th>
+						<th>Username</th>
+						<th>Date</th>
+						<th>Log Type</th>
+					</tr>
+					<tr>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+					</tr>
+				</table>
+			</div>
+		</div>
+	</body>
+</html>
