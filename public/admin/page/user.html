@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html style="width: 100%">
+	<head>
+		<title>ScratchVerifier Admin</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link rel="shortcut icon" type="image/png" href="/site/resources/favicon.ico">
+		<style>
+			* {
+			font-family: sans-serif;	
+			}
+			
+			header {
+				background-color: #01B5DC;
+				padding: 20px;
+				color: white;
+			}
+			
+			.headertitle {
+				margin: 0px;
+			}
+			
+			.title {
+				text-align: left;	
+			}
+			
+			.content {
+				margin-left: 20px;
+			}
+			
+			button {
+				background-color: #01B5DC;
+				color: white;
+				padding: 10px;
+				border: none;
+				border-radius: 5px;
+				width: 150px;
+				text-align: center;
+				margin-top: 10px;
+			}
+			
+			button:hover {
+				background-color: #009dbf; 	
+			}
+			
+			.input {
+				width: 300px;
+				height: 45px;
+				border: 2px solid black;
+				padding: 3px;
+				border-radius: 4px;
+				box-sizing: border-box;
+			}
+			
+			/*.button {
+				background-color: #01B5DC;
+				color: white;
+				padding: 10px;
+				border: none;
+				border-radius: 5px;
+				width: 85px;
+				height: 45px;
+				text-align: center;
+			}*/
+			
+			.deletebutton {
+				background-color: #c90000;
+				margin-top: 0;
+			}
+			
+			.deletebutton:hover {
+				background-color: #db2121;
+			}
+		</style>
+	</head>
+	<body style="margin: 0; width: 100%">
+		<header>
+			<h1 class="headertitle">ScratchVerifier Admin</h1>
+		</header>
+		<div class="content">
+			<h2 class="title">User Profile</h2>
+			<br>
+			<div class="apikey">
+				<h3 class="subtitle">API Key</h3>
+				<button class="button" id="reset">Reset</button>
+				<button class="button" id="copy">Copy</button>
+			</div>
+			<br>
+			<div class="requests">
+				<h3 class="subtitle">Requests Per Minute</h3>
+				<input type="text" placeholder="30" class="input">
+				<button class="button" id="set">Set</button>
+			</div>
+			<br>
+			<div class="lock">
+				<h3 class="subtitle">Lock Status</h3>
+				<p class="subtitle">Locked: NO</p>
+				<input type="text" placeholder="Lock Time (minutes) (-1 for infinite)" class="input">
+				<button class="button" id="set">Lock</button>
+				<button class="button" id="set">Unlock</button>
+			</div>
+			<br>
+			<div class="dangerzone">
+				<h3 class="subtitle">User ID: 1234</h3>
+				<button class="deletebutton" id="set">Delete</button>
+			</div>
+		</div>
+	</body>
+</html>
