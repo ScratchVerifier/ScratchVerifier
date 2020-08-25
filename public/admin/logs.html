@@ -112,12 +112,50 @@
 		<header>
 			<h1 class="headertitle">ScratchVerifier Admin</h1>
 		</header>
-		<h2 class="title">Main Panel</h2>
+		<h2 class="title">Logs</h2>
 		<div class="content">
-			<div class="lookup">
-				<h3 style="margin-top: 0px;">Lookup Client By UID</h3>
-				<input type="text" placeholder="User ID" class="IDinput">
-				<button class="lookupbutton">Lookup</button>
+            <h5>Usage Logs</h5>
+			<div class="logs">
+				<input type="text" class="logbox" id="appid" placeholder="App ID">
+				<input type="text" class="logbox" id="username" placeholder="Username">
+				<input type="text" class="logbox" id="beforeafter" placeholder="Before-After">
+				<input type="text" class="logbox" id="startend" placeholder="Start-End">
+				<input type="text" class="logbox" id="limit" placeholder="Limit">
+				<button class="fetchbutton">Fetch</button>
+				<br>
+				<br>
+				<table class="logstable">
+					<tr>
+						<th>ID</th>
+						<th>Client ID</th>
+						<th>Username</th>
+						<th>Date</th>
+						<th>Log Type</th>
+                    </tr>
+                    <div style="display:inherit;margin:0;" id="logList"></div>
+				</table>
+            </div>
+            <br><br>
+            <h5>Audit Logs</h5>
+			<div class="logs">
+				<input type="text" class="logbox" id="username" placeholder="Username">
+				<input type="text" class="logbox" id="beforeafter" placeholder="Before-After">
+				<input type="text" class="logbox" id="startend" placeholder="Start-End">
+                <input type="text" class="logbox" id="limit" placeholder="Limit">
+                <select></select>
+				<button class="fetchbutton">Fetch</button>
+				<br>
+				<br>
+				<table class="logstable">
+					<tr>
+						<th>ID</th>
+						<th>Client ID</th>
+						<th>Username</th>
+						<th>Date</th>
+						<th>Log Type</th>
+                    </tr>
+                    <div style="display:inherit;margin:0;" id="logList"></div>
+				</table>
 			</div>
 		</div>
 	</body>
