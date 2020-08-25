@@ -219,9 +219,9 @@ VALUES (?, ?, ?, ?)', (client_id, username, int(time.time()), 3 - succ))
         for k, v in params.items():
             if k in {'start', 'before', 'end', 'after', 'client_id', 'type'}:
                 params[k] = int(v)
-        limit = int(params['limit'])
+        params['limit'] = int(params['limit'])
         async with self.lock:
-            await self.db.execute(query, {'limit': limit, **params})
+            await self.db.execute(query, params)
             rows = await self.db.fetchall()
         return [dict(i) for i in rows]
 
@@ -249,15 +249,16 @@ WHERE username=?', (username,))
             row = await self.db.fetchone()
         if row is None:
             await self.db.execute('INSERT INTO scratchverifier_ratelimits \
-(username, limit) VALUES (:username, :limit)', {'username': username,
-                                                'limit': DEFAULT_RATELIMIT})
+(username, ratelimit) VALUES (:username, :ratelimit)',
+                                  {'username': username,
+                                   'ratelimit': DEFAULT_RATELIMIT})
             return await self.get_ratelimit(username)
         return row
 
     async def set_ratelimits(self, data, performer):
         await self.db.executemany('INSERT OR REPLACE INTO \
-scratchverifier_ratelimits (username, limit) \
-VALUES (:username, :limit)', data)
+scratchverifier_ratelimits (username, ratelimit) \
+VALUES (:username, :ratelimit)', data)
         await self.db.executemany(
             'INSERT INTO scratchverifier_auditlogs \
 (username, time, type, data) VALUES \
@@ -301,7 +302,7 @@ WHERE username=?', (i['username'] for i in data))
                 'time': int(time.time()),
                 'type': 1, # ban
                 'data': json.dumps(i)
-            } for i data)
+            } for i in data)
         )
 
     async def del_ban(self, username, performer):

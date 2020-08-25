@@ -52,13 +52,13 @@ class Log(metaclass=Response):
 
 class Ratelimit(metaclass=Response):
     username: int
-    limit: int
+    ratelimit: int
 
 class PartialRatelimit(metaclass=Response):
-    limit: int
+    ratelimit: int
 
 class Ban(metaclass=Response):
-    username: str,
+    username: str
     expiry: (int, Null)
 
 class PartialBan(metaclass=Response):

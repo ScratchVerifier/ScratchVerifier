@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS scratchverifier_ratelimits (
   -- username being limited
   username text PRIMARY KEY,
   -- number of requests per minute allowed
-  limit integer
+  ratelimit integer
 );
 CREATE TABLE IF NOT EXISTS scratchverifier_bans (
   -- username being banned

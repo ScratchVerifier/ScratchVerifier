@@ -453,7 +453,7 @@ class Server:
         if row is None:
             raise web.HTTPNotFound()
         return web.json_response(PartialRatelimit(
-            limit=row['limit']
+            ratelimit=row['ratelimit']
         ).d())
 
     async def set_ratelimits(self, request):
@@ -462,8 +462,8 @@ class Server:
         data = [i for i in await request.json()
                 if isinstance(i.get('username', None), str)
                 and USERNAME_REGEX.match(i['username'])
-                and isinstance(i.get('limit', None), int)
-                and i['limit'] > 0]
+                and isinstance(i.get('ratelimit', None), int)
+                and i['ratelimit'] > 0]
         await self.db.set_ratelimits(data, performer)
         raise web.HTTPNoContent()
 
@@ -472,11 +472,12 @@ class Server:
         performer = await self.admin_session(request)
         username = self.check_username(request)
         data = await request.json()
-        if not isinstance(data.get('limit', None), int) or data['limit'] <= 0:
+        if not isinstance(data.get('ratelimit', None), int) \
+           or data['ratelimit'] <= 0:
             raise web.HTTPBadRequest()
         await self.db.set_ratelimits(
             [{'username': username,
-              'limit': data['limit']}],
+              'ratelimit': data['ratelimit']}],
             performer
         )
         raise web.HTTPNoContent()
@@ -557,7 +558,7 @@ class Server:
         username = client['username']
         client['token'] = client['token'][:TOKEN_CENSOR_LEN] \
                           + '*' * (len(client['token']) - TOKEN_CENSOR_LEN)
-        client['ratelimit'] = await self.db.get_ratelimit(username)['limit']
+        client['ratelimit'] = await self.db.get_ratelimit(username)['ratelimit']
         client['banned'] = (await self.db.get_ban(username)) is not None
         return web.json_response(client)
 
