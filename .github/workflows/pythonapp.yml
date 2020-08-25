@@ -18,7 +18,7 @@ jobs:
         python3 -m pip install --upgrade pip
         pip3 install -r requirements.txt
         cd backend
-        echo '{"port":8888,"hook-secret":"","name":"","discord-hook":""}' > config.json
+        echo '{"port":8888,"hook-secret":"","name":"","discord-hook":"","admins":["Kenny2scratch"]}' > config.json
         python3 . --debug &
         sleep 3
         python3 ../tests.py
