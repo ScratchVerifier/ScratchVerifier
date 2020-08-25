@@ -1,3 +1,5 @@
+Null = type(None)
+
 class Response(type):
     def __new__(cls, name, bases, attrs):
         def __init__(self, **kwargs):
@@ -33,13 +35,13 @@ class Verification(metaclass=Response):
     code: str
     username: str
 
-class Session(metaclass=Response):
-    session: int
-
 class User(metaclass=Response):
     client_id: int
     token: str
     username: str
+
+class Admin(metaclass=Response):
+    admin: bool
 
 class Log(metaclass=Response):
     log_id: int
@@ -47,3 +49,31 @@ class Log(metaclass=Response):
     username: str
     log_time: int
     log_type: int
+
+class Ratelimit(metaclass=Response):
+    username: int
+    limit: int
+
+class PartialRatelimit(metaclass=Response):
+    limit: int
+
+class Ban(metaclass=Response):
+    username: str,
+    expiry: (int, Null)
+
+class PartialBan(metaclass=Response):
+    expiry: (int, Null)
+
+class AuditLog(metaclass=Response):
+    id: int
+    username: str
+    time: int
+    type: int
+    data: str
+
+class Client(metaclass=Response):
+    client_id: int
+    token: str
+    username: str
+    ratelimit: int
+    banned: bool

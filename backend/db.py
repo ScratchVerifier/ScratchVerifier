@@ -1,5 +1,6 @@
 import os
 import time
+import json
 from secrets import token_bytes, token_hex, randbits
 from hashlib import sha256
 import asyncio
@@ -72,6 +73,15 @@ token, username) VALUES (?, ?, ?)', (client_id, token, username))
         async with self.lock:
             await self.db.execute('SELECT * FROM scratchverifier_clients \
 WHERE username=?', (username,))
+            row = await self.db.fetchone()
+        if row is None:
+            return None
+        return dict(row)
+
+    async def get_client_info(self, client_id):
+        async with self.lock:
+            await self.db.execute('SELECT * FROM scratchverifier_clients \
+WHERE client_id=?', (client_id,))
             row = await self.db.fetchone()
         if row is None:
             return None
@@ -189,8 +199,8 @@ VALUES (?, ?, ?, ?)', (client_id, username, int(time.time()), 3 - succ))
 
     ### TABLE: logs solely ###
 
-    async def get_logs(self, limit=100, **params):
-        query = 'SELECT * FROM scratchverifier_logs WHERE 1=1'
+    async def get_logs(self, table='logs', **params):
+        query = f'SELECT * FROM scratchverifier_{table} WHERE 1=1'
         if 'start' in params:
             query += ' AND log_id<:start'
         if 'before' in params:
@@ -209,17 +219,102 @@ VALUES (?, ?, ?, ?)', (client_id, username, int(time.time()), 3 - succ))
         for k, v in params.items():
             if k in {'start', 'before', 'end', 'after', 'client_id', 'type'}:
                 params[k] = int(v)
-        limit = int(limit)
+        limit = int(params['limit'])
         async with self.lock:
             await self.db.execute(query, {'limit': limit, **params})
             rows = await self.db.fetchall()
         return [dict(i) for i in rows]
 
-    async def get_log(self, log_id):
+    async def get_log(self, log_id, table='logs'):
         async with self.lock:
-            await self.db.execute('SELECT * FROM scratchverifier_logs \
+            await self.db.execute(f'SELECT * FROM scratchverifier_{table} \
 WHERE log_id=?', (log_id,))
             row = await self.db.fetchone()
         if row is None:
             return None
         return dict(row)
+
+    ### TABLE: ratelimits ###
+
+    async def get_ratelimits(self):
+        async with self.lock:
+            await self.db.execute('SELECT * FROM scratchverifier_ratelimits')
+            rows = await self.db.fetchall()
+        return [dict(i) for i in rows]
+
+    async def get_ratelimit(self, username):
+        async with self.lock:
+            await self.db.execute('SELECT * FROM scratchverifier_ratelimits \
+WHERE username=?', (username,))
+            row = await self.db.fetchone()
+        if row is None:
+            await self.db.execute('INSERT INTO scratchverifier_ratelimits \
+(username, limit) VALUES (:username, :limit)', {'username': username,
+                                                'limit': DEFAULT_RATELIMIT})
+            return await self.get_ratelimit(username)
+        return row
+
+    async def set_ratelimits(self, data, performer):
+        await self.db.executemany('INSERT OR REPLACE INTO \
+scratchverifier_ratelimits (username, limit) \
+VALUES (:username, :limit)', data)
+        await self.db.executemany(
+            'INSERT INTO scratchverifier_auditlogs \
+(username, time, type, data) VALUES \
+(:username, :time, :type, :data)',
+            ({
+                'username': performer,
+                'time': int(time.time()),
+                'type': 2, # ratelimit update
+                'data': json.dumps(i)
+            } for i in data)
+        )
+
+    ### TABLE: bans ###
+
+    async def get_bans(self):
+        async with self.lock:
+            await self.db.execute('SELECT * FROM scratchverifier_bans')
+            rows = await self.db.fetchall()
+        return [dict(i) for i in rows]
+
+    async def get_ban(self, username):
+        async with self.lock:
+            await self.db.execute('SELECT * FROM scratchverifier_bans \
+WHERE username=?', (username,))
+            row = await self.db.fetchone()
+        if row is None:
+            return None
+        return row
+
+    async def set_bans(self, data, performer):
+        await self.db.executemany('INSERT OR REPLACE INTO scratchverifier_bans \
+(username, expiry) VALUES (:username, :expiry)', data)
+        await self.db.executemany('DELETE FROM scratchverifier_clients \
+WHERE username=?', (i['username'] for i in data))
+        await self.db.executemany(
+            'INSERT INTO scratchverifier_auditlogs \
+(username, time, type, data) VALUES \
+(:username, :time, :type, :data)',
+            ({
+                'username': performer,
+                'time': int(time.time()),
+                'type': 1, # ban
+                'data': json.dumps(i)
+            } for i data)
+        )
+
+    async def del_ban(self, username, performer):
+        await self.db.execute('DELETE FROM scratchverifier_bans \
+WHERE username=?', (username,))
+        await self.db.execute(
+            'INSERT INTO scratchverifier_auditlogs \
+(username, time, type, data) VALUES \
+(:username, :time, :type, :data)',
+            {
+                'username': performer,
+                'time': int(time.time()),
+                'type': 3, # unban
+                'data': json.dumps(performer)
+            }
+        )
