@@ -36,3 +36,27 @@ CREATE TABLE IF NOT EXISTS scratchverifier_logs (
   -- type of log: 1 for starting verification, 2 for successful, 3 for failed verification
   log_type integer
 );
+CREATE TABLE IF NOT EXISTS scratchverifier_ratelimits (
+  -- username being limited
+  username text PRIMARY KEY,
+  -- number of requests per minute allowed
+  limit integer
+);
+CREATE TABLE IF NOT EXISTS scratchverifier_bans (
+  -- username being banned
+  username text PRIMARY KEY,
+  -- when the ban expires
+  expiry integer
+);
+CREATE TABLE IF NOT EXISTS scratchverifier_auditlogs (
+  -- log ID to look up by
+  log_id integer PRIMARY KEY AUTOINCREMENT,
+  -- performer of action
+  username text,
+  -- unix epoch time of log
+  time integer,
+  -- type of action (1 is ban, 2 is ratelimit update)
+  type integer,
+  -- naive JSON string of action data
+  data text
+);
