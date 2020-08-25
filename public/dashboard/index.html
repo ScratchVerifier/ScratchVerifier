@@ -67,7 +67,7 @@
   function logout(){
     document.querySelector("#dashboard").style.display = "none"
     document.querySelector(".loading").style.display = ""
-    fetch("/session/" + localStorage.getItem("token") + "/logout",{method:"POST"}).then(e=>{
+    fetch("/session/logout",{method:"POST"}).then(e=>{
       localStorage.removeItem('token');
       location.reload()
     })
@@ -76,7 +76,7 @@
     if (confirm("Log out all sessions?")){
       document.querySelector("#dashboard").style.display = "none"
       document.querySelector(".loading").style.display = ""
-      fetch("/users/" + window.username + "/logout?session=" + localStorage.getItem("token"),{method:"POST"}).then(e=>{
+      fetch("/users/" + window.username + "/logout",{method:"POST"}).then(e=>{
         localStorage.removeItem('token');
         location.reload()
       })
@@ -85,14 +85,14 @@
   function createApp(){
     document.querySelector("#createApp").style.display = "none"
     document.querySelector(".loading").style.display = ""
-    fetch("/session/" + localStorage.getItem("token"),{method:"PUT"}).then(e=>{
+    fetch("/session",{method:"PUT"}).then(e=>{
       window.onload()
     })
   }
   function regenerateToken(){
     document.querySelector("#dashboard").style.display = "none"
     document.querySelector(".loading").style.display = ""
-    fetch("/session/" + localStorage.getItem("token"),{method:"PATCH"}).then(e=>{
+    fetch("/session",{method:"PATCH"}).then(e=>{
       window.onload()
     })
   }
@@ -100,7 +100,7 @@
     if (confirm("Are you sure to delete this app?")){
       document.querySelector("#dashboard").style.display = "none"
       document.querySelector(".loading").style.display = ""
-      fetch("/session/" + localStorage.getItem("token"),{method:"DELETE"}).then(e=>{
+      fetch("/session",{method:"DELETE"}).then(e=>{
         window.onload()
       })
     }
@@ -110,7 +110,7 @@ window.onload = ()=>{
   if (typeof localStorage.getItem("token") !== "string"){
     location.replace("/site/login")
   } else {
-    fetch("/session/" + localStorage.getItem("token")).then(e=>{
+    fetch("/session").then(e=>{
       if (e.status === 401){
         localStorage.removeItem("token")
         location.replace("/site/login")

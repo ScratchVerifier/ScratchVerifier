@@ -98,7 +98,7 @@ function step2(){
     }
   }).then(data=>{
     if (typeof data === "object"){
-      localStorage.setItem("token",data.session)
+      localStorage.setItem("isAdmin",data.admin)
       location.replace("/site/dashboard")
     }
   })
