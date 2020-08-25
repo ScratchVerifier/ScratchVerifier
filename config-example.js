@@ -4,5 +4,6 @@
   "port":8888, // HTTP Server port. Required.
   "discord-hook":"https://discord.com/api/webhooks/xxxxxxxxxxx/xxxxxxxxxxx", // Discord error logging hook, leave empty to not log. Optional.
   "hook-secret":"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", // GitHub webhook secret, used for automatic deployment. Only use type application/json hooks, and only the `push` event.
-  "name":"ScratchVerifier" // Instance owner / ID. Included in the error message from the Discord webhook.
+  "name":"ScratchVerifier", // Instance owner / ID. Included in the error message from the Discord webhook.
+  "admins":["user1", "user2"] // People with access to the /admin API's and /site/admin features.
 }
