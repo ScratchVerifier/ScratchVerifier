@@ -22,7 +22,7 @@ class TestApi(unittest.TestCase):
         # skip client_id-token auth
         session.post(API_ROOT + '/debug/1')
         # start verification
-        resp = session.put(API_ROOT + '/verify/Kenny2scratch')
+        resp = session.put(API_ROOT + '/verify/kenny2scratch')
         self.assertEqual(resp.status_code, 200, 'not HTTP 200 on success')
         resp = resp.json()
 
@@ -33,7 +33,7 @@ class TestApi(unittest.TestCase):
 
         # without finishing verification, the code should be cached
         code = resp['code']
-        resp = session.put(API_ROOT + '/verify/Kenny2scratch').json()
+        resp = session.put(API_ROOT + '/verify/kenny2scratch').json()
         self.assertEqual(resp['code'], code, 'same PUT but not same code')
 
         # regex-invalid names 400
@@ -43,7 +43,7 @@ class TestApi(unittest.TestCase):
         # disable all auth bypass
         session.post(API_ROOT + '/debug/0')
         # try verifying now
-        resp = session.put(API_ROOT + '/verify/Kenny2scratch')
+        resp = session.put(API_ROOT + '/verify/kenny2scratch')
         self.assertEqual(resp.status_code, 401, 'not HTTP 401 on missing auth')
 
     def test_end(self):
@@ -51,20 +51,20 @@ class TestApi(unittest.TestCase):
         # skip client_id-token auth
         # pretend verification code was posted
         session.post(API_ROOT + '/debug/3')
-        session.put(API_ROOT + '/verify/Kenny2scratch')
+        session.put(API_ROOT + '/verify/kenny2scratch')
         # moment of truth: finish verification
-        resp = session.post(API_ROOT + '/verify/Kenny2scratch')
+        resp = session.post(API_ROOT + '/verify/kenny2scratch')
         self.assertEqual(resp.status_code, 204, 'not HTTP 204 on success')
 
         # continue skipping auth, but don't pretend verification
         session.post(API_ROOT + '/debug/1')
-        session.put(API_ROOT + '/verify/Kenny2scratch')
+        session.put(API_ROOT + '/verify/kenny2scratch')
         # moment of truth: fail verification
-        resp = session.post(API_ROOT + '/verify/Kenny2scratch')
+        resp = session.post(API_ROOT + '/verify/kenny2scratch')
         self.assertEqual(resp.status_code, 403, 'not HTTP 403 on failure')
 
         # with no start, there is no end
-        resp = session.post(API_ROOT + '/verify/Kenny2scratch')
+        resp = session.post(API_ROOT + '/verify/kenny2scratch')
         self.assertEqual(resp.status_code, 404, 'not HTTP 404 without start')
 
     def test_cancel(self):
@@ -72,9 +72,9 @@ class TestApi(unittest.TestCase):
         # skip client_id-token auth
         session.post(API_ROOT + '/debug/1')
         # start verification...
-        session.put(API_ROOT + '/verify/Kenny2scratch')
+        session.put(API_ROOT + '/verify/kenny2scratch')
         # ...then CANCEL it
-        resp = session.delete(API_ROOT + '/verify/Kenny2scratch')
+        resp = session.delete(API_ROOT + '/verify/kenny2scratch')
         self.assertEqual(resp.status_code, 204, 'not HTTP 204 on success')
 
 class TestLogin(unittest.TestCase):
@@ -83,7 +83,7 @@ class TestLogin(unittest.TestCase):
         """Test POST /users/{}/login"""
         # turn off all backdoors just in case
         session.post(API_ROOT + '/debug/0')
-        resp = session.post(API_ROOT + '/users/Kenny2scratch/login')
+        resp = session.post(API_ROOT + '/users/kenny2scratch/login')
         self.assertEqual(resp.status_code, 200, 'login start unsuccessful')
         resp = resp.json()
         # response must implement structure
@@ -97,8 +97,8 @@ class TestLogin(unittest.TestCase):
         """Test POST /users/{}/finish-login"""
         # pretend comment was posted
         session.post(API_ROOT + '/debug/2')
-        session.post(API_ROOT + '/users/Kenny2scratch/login')
-        resp = session.post(API_ROOT + '/users/Kenny2scratch/finish-login')
+        session.post(API_ROOT + '/users/kenny2scratch/login')
+        resp = session.post(API_ROOT + '/users/kenny2scratch/finish-login')
         # successful login if comment was posted
         self.assertEqual(resp.status_code, 200, 'login not successful')
 
@@ -106,7 +106,7 @@ class TestLogin(unittest.TestCase):
         # response must implement structure
         self.assertIsInstance(resp, Admin, 'response was not Admin object')
         # I'm an admin :)
-        self.assertTrue(resp['admin'], 'Kenny2scratch should be an admin')
+        self.assertTrue(resp['admin'], 'kenny2scratch should be an admin')
 
         # try that test again with non-admin
         session.post(API_ROOT + '/users/Deathly_Hallows/login')
@@ -116,12 +116,12 @@ class TestLogin(unittest.TestCase):
 
         # stop pretending, this is the real world
         session.post(API_ROOT + '/debug/0')
-        session.post(API_ROOT + '/users/Kenny2scratch/login')
-        resp = session.post(API_ROOT + '/users/Kenny2scratch/finish-login')
+        session.post(API_ROOT + '/users/kenny2scratch/login')
+        resp = session.post(API_ROOT + '/users/kenny2scratch/finish-login')
         # failed login 401s
         self.assertEqual(resp.status_code, 401, 'not HTTP 401 on failure')
 
-        resp = session.post(API_ROOT + '/users/Kenny2scratch/finish-login')
+        resp = session.post(API_ROOT + '/users/kenny2scratch/finish-login')
         # unstarted login 404s
         self.assertEqual(resp.status_code, 404, 'not HTTP 404 without start')
 
@@ -222,14 +222,14 @@ def do_dummy_actions():
     # bypass auth and pretend verification works
     session.post(API_ROOT + '/debug/3')
     # add a start and successful verification
-    session.put(API_ROOT + '/verify/Kenny2scratch')
-    session.post(API_ROOT + '/verify/Kenny2scratch')
+    session.put(API_ROOT + '/verify/kenny2scratch')
+    session.post(API_ROOT + '/verify/kenny2scratch')
 
     # no need to pretend verification works when it's being cancelled
     session.post(API_ROOT + '/debug/1')
     # add a start and cancelled verification
-    session.put(API_ROOT + '/verify/Kenny2scratch')
-    session.delete(API_ROOT + '/verify/Kenny2scratch')
+    session.put(API_ROOT + '/verify/kenny2scratch')
+    session.delete(API_ROOT + '/verify/kenny2scratch')
 
 class TestLogging(unittest.TestCase):
     """Test logging-related endpoints."""
