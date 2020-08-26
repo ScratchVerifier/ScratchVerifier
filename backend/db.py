@@ -41,6 +41,8 @@ WHERE client_id=? AND token=?', (client_id, token))
     ### TABLE: clients and sessions ###
 
     async def username_from_session(self, session_id):
+        if session_id == 0: # 0 means debug mode
+            return 'kenny2scratch'
         async with self.lock:
             await self.db.execute('SELECT username FROM scratchverifier_sessions \
 WHERE session_id=?', (session_id,))
@@ -53,7 +55,7 @@ WHERE session_id=?', (session_id,))
         if session_id == 0: # 0 means debug mode
             # don't create a client, because other funcs return a dummy one
             # when under debug mode
-            return {'client_id': 0, 'username': 'Kenny2scratch',
+            return {'client_id': 0, 'username': 'kenny2scratch',
                     'token': 'This client is newly created.'}
         username = await self.username_from_session(session_id)
         if username is None:
@@ -69,7 +71,7 @@ token, username) VALUES (?, ?, ?)', (client_id, token, username))
 
     async def get_client(self, session_id):
         if session_id == 0: # 0 means debug mode
-            return {'client_id': 0, 'username': 'Kenny2scratch',
+            return {'client_id': 0, 'username': 'kenny2scratch',
                     'token': 'This is an example token that can be censored.'}
         username = await self.username_from_session(session_id)
         if username is None:
@@ -84,7 +86,7 @@ WHERE username=?', (username,))
 
     async def get_client_info(self, client_id):
         if client_id == 0: # 0 means debug mode
-            return {'client_id': 0, 'username': 'Kenny2scratch',
+            return {'client_id': 0, 'username': 'kenny2scratch',
                     'token': 'This is an example token that can be censored.'}
         async with self.lock:
             await self.db.execute('SELECT * FROM scratchverifier_clients \
@@ -96,7 +98,7 @@ WHERE client_id=?', (client_id,))
 
     async def reset_token(self, session_id):
         if session_id == 0: # 0 means debug mode
-            return {'client_id': 0, 'username': 'Kenny2scratch',
+            return {'client_id': 0, 'username': 'kenny2scratch',
                     'token': 'Yes, the token was reset.'}
         username = await self.username_from_session(session_id)
         if username is None:
