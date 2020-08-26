@@ -1,25 +1,15 @@
 import os
 import re
 import time
+import json
 from glob import glob
 import traceback
 import hmac
 import asyncio
 import mimetypes
 from aiohttp import web, ClientSession, BasicAuth
-from db import Database, USERS_API, SESSION_EXPIRY
+from db import Database, SESSION_EXPIRY
 from responses import *
-
-DEFAULT_PORT = 8888
-COMMENTS_API = 'https://scratch.mit.edu/site-api/comments/user/{}/\
-?page=1&salt={}'
-USERNAME_REGEX = re.compile('^[A-Za-z0-9_-]{3,20}$')
-COMMENTS_REGEX = re.compile(r"""<div id="comments-\d+" class="comment +" data-comment-id="\d+">.*?<div class="actions-wrap">.*?<div class="name">\s+<a href="/users/([_a-zA-Z0-9-]+)">\1</a>\s+</div>\s+<div class="content">(.*?)</div>""", re.S)
-DEFAULT_RATELIMIT = 30 # max requests per LIMIT_PER_TIME
-LIMIT_PER_TIME = 60 # in seconds
-TOKEN_CENSOR_LEN = 8 # how many characters to show in admin-viewed tokens
-DEFAULT_LOG_LIMIT = 100 # how many log entries to show if limit is unspecified
-MAX_LOG_LIMIT = 500 # how many /usage logs are allowed to show at once
 
 class Server:
     def __init__(self, hook_secret, discord_hook, admins, name=None):
@@ -96,6 +86,8 @@ class Server:
             return await handler(request)
         except web.HTTPException as exc:
             raise
+        except json.JSONDecodeError:
+            raise web.HTTPBadRequest() from None
         except Exception as exc:
             if self._debug:
                 print(traceback.format_exc())
@@ -442,7 +434,7 @@ class Server:
     async def get_ratelimit(self, request):
         """GET /admin/ratelimits/{username}"""
         await self.admin_session(request)
-        username = self.check_username(request)
+        username = await self.check_username(request)
         row = await self.db.get_ratelimit(username) # entire row
         if row is None:
             raise web.HTTPNotFound()
@@ -453,7 +445,10 @@ class Server:
     async def set_ratelimits(self, request):
         """PATCH /admin/ratelimits"""
         performer = await self.admin_session(request)
-        data = [i for i in await request.json()
+        data = await request.json()
+        if not isinstance(data, list):
+            raise web.HTTPBadRequest()
+        data = [i for i in data
                 if isinstance(i.get('username', None), str)
                 and USERNAME_REGEX.match(i['username'])
                 and isinstance(i.get('ratelimit', None), int)
@@ -464,7 +459,7 @@ class Server:
     async def set_ratelimit(self, request):
         """POST /admin/ratelimits/{username}"""
         performer = await self.admin_session(request)
-        username = self.check_username(request)
+        username = await self.check_username(request)
         data = await request.json()
         if not isinstance(data.get('ratelimit', None), int) \
            or data['ratelimit'] <= 0:
@@ -486,7 +481,7 @@ class Server:
     async def get_ban(self, request):
         """GET /admin/bans/{username}"""
         await self.admin_session(request)
-        username = self.check_username(request)
+        username = await self.check_username(request)
         row = await self.db.get_ban(username) # entire row
         if row is None:
             raise web.HTTPNotFound()
@@ -500,16 +495,16 @@ class Server:
         data = [i for i in await request.json()
                 if isinstance(i['username'], str)
                 and USERNAME_REGEX.match(i['username'])
-                and (isinstance(i['expiry'], int)
-                     and i['expiry'] > time.time()
-                     or i['expiry'] is None)]
+                and isinstance(i.get('expiry', ...), (int, type(None)))
+                and (i['expiry'] is None
+                     or i['expiry'] > time.time())]
         await self.db.set_bans(data, performer)
         raise web.HTTPNoContent()
 
     async def ban_single(self, request):
         """POST /admin/bans/{username}"""
         performer = await self.admin_session(request)
-        username = self.check_username(request)
+        username = await self.check_username(request)
         data = await request.json()
         if not isinstance(data.get('expiry', ...), (int, type(None))) \
            or isinstance(data['expiry'], int) and data['expiry'] <= time.time():
@@ -524,7 +519,7 @@ class Server:
     async def unban(self, request):
         """DELETE /admin/bans/{username}"""
         performer = await self.admin_session(request)
-        username = self.check_username(request)
+        username = await self.check_username(request)
         await self.db.del_ban(username, performer)
         raise web.HTTPNoContent()
 
@@ -546,13 +541,14 @@ class Server:
         """GET /admin/client/{clientid}"""
         await self.admin_session(request)
         client_id = self.get_client_id(request)
-        client = self.db.get_client_info(client_id)
+        client = await self.db.get_client_info(client_id)
         if client is None:
             raise web.HTTPNotFound()
         username = client['username']
         client['token'] = client['token'][:TOKEN_CENSOR_LEN] \
                           + '*' * (len(client['token']) - TOKEN_CENSOR_LEN)
-        client['ratelimit'] = await self.db.get_ratelimit(username)['ratelimit']
+        row = await self.db.get_ratelimit(username)
+        client['ratelimit'] = row and row['ratelimit']
         client['banned'] = (await self.db.get_ban(username)) is not None
         return web.json_response(client)
 

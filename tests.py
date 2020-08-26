@@ -1,5 +1,6 @@
 """Test actual API endpoints"""
 import sys
+import time
 import os
 import unittest
 import requests
@@ -109,10 +110,10 @@ class TestLogin(unittest.TestCase):
         self.assertTrue(resp['admin'], 'kenny2scratch should be an admin')
 
         # try that test again with non-admin
-        session.post(API_ROOT + '/users/Deathly_Hallows/login')
-        resp = session.post(API_ROOT + '/users/Deathly_Hallows/finish-login')
+        session.post(API_ROOT + '/users/deathly_hallows/login')
+        resp = session.post(API_ROOT + '/users/deathly_hallows/finish-login')
         resp = resp.json()
-        self.assertFalse(resp['admin'], 'Deathly_Hallows should not be admin')
+        self.assertFalse(resp['admin'], 'deathly_hallows should not be admin')
 
         # stop pretending, this is the real world
         session.post(API_ROOT + '/debug/0')
@@ -217,29 +218,28 @@ class TestLogin(unittest.TestCase):
         resp = session.delete(API_ROOT + '/session')
         self.assertEqual(resp.status_code, 401, 'not 401 on missing auth')
 
-def do_dummy_actions():
-    """Do some stuff so that the logs are populated"""
-    # bypass auth and pretend verification works
-    session.post(API_ROOT + '/debug/3')
-    # add a start and successful verification
-    session.put(API_ROOT + '/verify/kenny2scratch')
-    session.post(API_ROOT + '/verify/kenny2scratch')
-
-    # no need to pretend verification works when it's being cancelled
-    session.post(API_ROOT + '/debug/1')
-    # add a start and cancelled verification
-    session.put(API_ROOT + '/verify/kenny2scratch')
-    session.delete(API_ROOT + '/verify/kenny2scratch')
-
 class TestLogging(unittest.TestCase):
     """Test logging-related endpoints."""
-    def test_logs(self):
-        """Test GET /usage"""
-        do_dummy_actions()
+    @classmethod
+    def setUpClass(cls):
+        """Do some stuff so that the logs are populated"""
+        # bypass auth and pretend verification works
+        session.post(API_ROOT + '/debug/3')
+        # add a start and successful verification
+        session.put(API_ROOT + '/verify/kenny2scratch')
+        session.post(API_ROOT + '/verify/kenny2scratch')
 
-        # no need to pretend anything, logs are public
+        # no need to pretend verification works when it's being cancelled
+        session.post(API_ROOT + '/debug/1')
+        # add a start and cancelled verification
+        session.put(API_ROOT + '/verify/kenny2scratch')
+        session.delete(API_ROOT + '/verify/kenny2scratch')
+
+        # turn off debug because it's not necessary for the rest
         session.post(API_ROOT + '/debug/0')
 
+    def test_logs(self):
+        """Test GET /usage"""
         resp = session.get(API_ROOT + '/usage')
         # a well-formed request should always be a 200
         self.assertEqual(resp.status_code, 200, 'not 200')
@@ -248,7 +248,7 @@ class TestLogging(unittest.TestCase):
         # response items must implement structure
         self.assertIsInstance(resp[0], Log, 'not a list of *Log*s')
 
-        # match entries with previously actions
+        # match entries with previous actions
         self.assertEqual(resp[0]['log_type'], 4, 'last log was not invalidated')
         self.assertEqual(resp[0]['username'], 'kenny2scratch', 'wrong name')
         self.assertEqual(resp[1]['log_type'], 1, '2nd-last log was not started')
@@ -256,10 +256,6 @@ class TestLogging(unittest.TestCase):
 
     def test_important_log_params(self):
         """Test GET /usage parameters"""
-        do_dummy_actions()
-        # debug not necessary for this
-        session.post(API_ROOT + '/debug/0')
-
         # ensure quota exceeding fails
         resp = session.get(API_ROOT + '/usage', params={'limit': 600})
         self.assertEqual(resp.status_code, 403, 'not 403 on big limit')
@@ -278,10 +274,6 @@ class TestLogging(unittest.TestCase):
 
     def test_log(self):
         """Test GET /usage/{}"""
-        do_dummy_actions()
-        # debug not necessary
-        session.post(API_ROOT + '/debug/0')
-
         resp = session.get(API_ROOT + '/usage/-1')
         # no negative log IDs
         self.assertEqual(resp.status_code, 404, 'not 404 on nonexistent log')
@@ -298,7 +290,424 @@ class TestLogging(unittest.TestCase):
         # response must implement structure
         self.assertIsInstance(resp, Log, 'response was not Log object')
         # check this is actually the same log
-        self.assertEqual(resp, log, 'wrong log type')
+        self.assertEqual(resp, log, 'not the same log')
+
+class TestRatelimits(unittest.TestCase):
+    """Test ratelimits (API endpoints only)."""
+    @classmethod
+    def setUpClass(cls):
+        """All of these tests requires an admin session."""
+        set_session(0)
+        session.post(API_ROOT + '/debug/1')
+        session.post(API_ROOT + '/admin/ratelimits/kenny2scratch',
+                     json={'ratelimit': 60})
+
+    def test_get_all(self):
+        """Test GET /admin/ratelimits"""
+        # using admin session: on
+        session.post(API_ROOT + '/debug/1')
+
+        resp = session.get(API_ROOT + '/admin/ratelimits')
+        # unless unauthenticated, response should be 200
+        self.assertEqual(resp.status_code, 200, 'ratelimits returned non-200')
+
+        resp = resp.json()
+        # response must implement structures
+        self.assertIsInstance(resp, list, 'response not *list* of Ratelimits')
+        self.assertIsInstance(resp[0], Ratelimit, 'response not Ratelimits')
+
+        found = False
+        for ratelimit in resp:
+            if ratelimit['username'] == 'kenny2scratch':
+                # setup set limit to 60, make sure that persists
+                self.assertEqual(ratelimit['ratelimit'], 60,
+                                 'limit is different from what was set')
+                found = True
+                break
+        # setup set limit for me, make sure it's there
+        self.assertTrue(found, 'no ratelimit for kenny2scratch')
+
+        # using admin session: off
+        session.post(API_ROOT + '/debug/0')
+
+        resp = session.get(API_ROOT + '/admin/ratelimits')
+        # unauthenticated must be 401, otherwise it's a security issue
+        self.assertEqual(resp.status_code, 401, 'unauthenticated MUST be 401')
+
+    def test_get_one(self):
+        """Test GET /admin/ratelimits/{}"""
+        # using admin session: on
+        session.post(API_ROOT + '/debug/1')
+
+        resp = session.get(API_ROOT + '/admin/ratelimits/kenny2scratch')
+        # this was set earlier, so it should be 200
+        self.assertEqual(resp.status_code, 200, 'ratelimit returned non-200')
+
+        resp = resp.json()
+        # response must implement structure
+        self.assertIsInstance(resp, PartialRatelimit, 'response not PR')
+
+        # setup set limit to 60, make sure that persists
+        self.assertEqual(resp['ratelimit'], 60,
+                         'limit is different from what was set')
+
+        resp = session.get(API_ROOT + '/admin/ratelimits/validbutnonexistent')
+        # not set, not found
+        self.assertEqual(resp.status_code, 404, 'not 404 for valid username')
+
+        resp = session.get(API_ROOT + '/admin/ratelimits/Impossible Username')
+        # not valid, bad request
+        self.assertEqual(resp.status_code, 400, 'not 400 for invalid username')
+
+        # using admin session: off
+        session.post(API_ROOT + '/debug/0')
+
+        resp = session.get(API_ROOT + '/admin/ratelimits/kenny2scratch')
+        # unauthenticated, unauthorized
+        self.assertEqual(resp.status_code, 401, 'unauthenticated MUST be 401')
+
+    def test_set_all(self):
+        """Test PATCH /admin/ratelimits"""
+        # using admin session: on
+        session.post(API_ROOT + '/debug/1')
+
+        resp = session.patch(API_ROOT + '/admin/ratelimits', json=[
+            {'username': 'validusername', 'ratelimit': 50},
+            {'username': 'anothervalid', 'ratelimit': 20},
+        ])
+        # success is a blank response
+        self.assertEqual(resp.status_code, 204, 'unsuccessful PATCH')
+
+        # make sure only those were set
+        resp = session.get(API_ROOT + '/admin/ratelimits/kenny2scratch').json()
+        self.assertEqual(resp['ratelimit'], 60, 'PATCH modified kenny2scratch')
+
+        # make sure those that were set were set right
+        resp = session.get(API_ROOT + '/admin/ratelimits/validusername')
+        self.assertEqual(resp.status_code, 200, 'PATCH never set validusername')
+        resp = resp.json()
+        self.assertEqual(resp['ratelimit'], 50, 'incorrect ratelimit')
+
+        # make sure invalid format errors too
+        resp = session.patch(API_ROOT + '/admin/ratelimits',
+                             data={'youfellforit': 'fool!'})
+        self.assertEqual(resp.status_code, 400, 'non-JSON never errored')
+
+        # using admin session: off
+        session.post(API_ROOT + '/debug/0')
+
+        resp = session.patch(API_ROOT + '/admin/ratelimits', json=[
+            {'username': 'validusername', 'ratelimit': 20},
+            {'username': 'anothervalid', 'ratelimit': 50},
+        ])
+        # now more than ever, unauthenticated must be unauthorized
+        self.assertEqual(resp.status_code, 401, 'unauthenticated MUST be 401')
+
+    def test_set_one(self):
+        """Test POST /admin/ratelimits/{}"""
+        # using admin session: on
+        session.post(API_ROOT + '/debug/1')
+
+        resp = session.post(API_ROOT + '/admin/ratelimits/yetanother',
+                            json={'ratelimit': 20})
+        # success is blank
+        self.assertEqual(resp.status_code, 204, 'unsuccessful POST')
+
+        # make sure it was set
+        resp = session.get(API_ROOT + '/admin/ratelimits/yetanother')
+        self.assertEqual(resp.status_code, 200, 'POST never set yetanother')
+        resp = resp.json()
+        self.assertEqual(resp['ratelimit'], 20, 'incorrect ratelimit')
+
+        # make sure invalid data errors
+        resp = session.post(API_ROOT + '/admin/ratelimits/yetanother',
+                            data={'thundercross': 'splitattack!'})
+        self.assertEqual(resp.status_code, 400, 'non-JSON never errored')
+        resp = session.post(API_ROOT + '/admin/ratelimits/yetanother',
+                            json={'ratelimit': -2})
+        self.assertEqual(resp.status_code, 400, '-ve limit never errored')
+        resp = session.post(API_ROOT + '/admin/ratelimits/yetanother',
+                            json={'ratelimit': 'max'})
+        self.assertEqual(resp.status_code, 400, 'non-int limit never errored')
+
+        # using admin session: off
+        session.post(API_ROOT + '/debug/0')
+
+        resp = session.post(API_ROOT + '/admin/ratelimits/yetanother',
+                            json={'ratelimit': 50})
+        # you know the drill
+        self.assertEqual(resp.status_code, 401, 'unauthenticated, MUST be 401')
+
+test_ban_expiry = int(time.time() + 1e6)
+
+class TestBans(unittest.TestCase):
+    """Test bans and their implementation."""
+
+    @classmethod
+    def setUpClass(cls):
+        """All of these tests requires an admin session."""
+        set_session(0)
+        session.post(API_ROOT + '/debug/1')
+        session.post(API_ROOT + '/admin/bans/permbanneduser',
+                     json={'expiry': None})
+        session.post(API_ROOT + '/admin/bans/tempbanneduser',
+                     json={'expiry': test_ban_expiry})
+
+    def test_get_all(self):
+        """Test GET /admin/bans"""
+        # using admin session: on
+        session.post(API_ROOT + '/debug/1')
+
+        resp = session.get(API_ROOT + '/admin/bans')
+        # unless unauthenticated, response should be 200
+        self.assertEqual(resp.status_code, 200, 'bans returned non-200')
+
+        resp = resp.json()
+        # response must implement structures
+        self.assertIsInstance(resp, list, 'response not *list* of Bans')
+        self.assertIsInstance(resp[0], Ban, 'response not list of *Ban*s')
+
+        found_perm = False
+        found_temp = False
+        for ban in resp:
+            if ban['username'] == 'permbanneduser':
+                # perm ban is None expiry, make sure that persists
+                self.assertIsNone(ban['expiry'],
+                                 'permanent ban is not None expiry')
+                found_perm = True
+                if found_temp:
+                    break
+            if ban['username'] == 'tempbanneduser':
+                # temp ban has existent expiry
+                self.assertEqual(ban['expiry'], test_ban_expiry,
+                                 'expiry is different from what was set')
+                found_temp = True
+                if found_perm:
+                    break
+        # make sure the bans are there in the first place
+        self.assertTrue(found_perm, 'permanent ban was never set')
+        self.assertTrue(found_temp, 'temporary ban was never set')
+
+        # using admin session: off
+        session.post(API_ROOT + '/debug/0')
+
+        resp = session.get(API_ROOT + '/admin/bans')
+        # unauthenticated must be 401
+        self.assertEqual(resp.status_code, 401, 'unauthenticated MUST be 401')
+
+    def test_get_one(self):
+        """Test GET /admin/bans/{}"""
+        # using admin session: on
+        session.post(API_ROOT + '/debug/1')
+
+        resp = session.get(API_ROOT + '/admin/bans/permbanneduser')
+        # this was set earlier, so it should be 200
+        self.assertEqual(resp.status_code, 200, 'bans returned non-200')
+
+        resp = resp.json()
+        # response must implement structure
+        self.assertIsInstance(resp, PartialBan, 'response not PB')
+
+        # setup set expiry to None, make sure that persists
+        self.assertIsNone(resp['expiry'],
+                         'expiry is different from what was set')
+
+        resp = session.get(API_ROOT + '/admin/bans/deathly_hallows')
+        # not set, not found
+        self.assertEqual(resp.status_code, 404, 'not 404 for valid username')
+
+        resp = session.get(API_ROOT + '/admin/bans/Impossible Username')
+        # not valid, bad request
+        self.assertEqual(resp.status_code, 400, 'not 400 for invalid username')
+
+        # using admin session: off
+        session.post(API_ROOT + '/debug/0')
+
+        resp = session.get(API_ROOT + '/admin/bans/permbanneduser')
+        # unauthenticated, unauthorized
+        self.assertEqual(resp.status_code, 401, 'unauthenticated MUST be 401')
+
+    def test_set_all(self):
+        """Test PATCH /admin/bans"""
+        # using admin session: on
+        session.post(API_ROOT + '/debug/1')
+
+        resp = session.patch(API_ROOT + '/admin/bans', json=[
+            {'username': 'validusername', 'expiry': test_ban_expiry + 50},
+            {'username': 'anothervalid', 'expiry': test_ban_expiry + 20},
+        ])
+        # success is a blank response
+        self.assertEqual(resp.status_code, 204, 'unsuccessful PATCH')
+
+        # make sure only those were set
+        resp = session.get(API_ROOT + '/admin/bans/permbanneduser').json()
+        self.assertIsNone(resp['expiry'], 'PATCH modified permbanneduser')
+
+        # make sure those that were set were set right
+        resp = session.get(API_ROOT + '/admin/bans/validusername')
+        self.assertEqual(resp.status_code, 200, 'PATCH never set validusername')
+        resp = resp.json()
+        self.assertEqual(resp['expiry'], test_ban_expiry + 50, 'wrong expiry')
+
+        # make sure invalid format errors too
+        resp = session.patch(API_ROOT + '/admin/bans',
+                             data={'youfellforit': 'fool!'})
+        self.assertEqual(resp.status_code, 400, 'non-JSON never errored')
+
+        # using admin session: off
+        session.post(API_ROOT + '/debug/0')
+
+        resp = session.patch(API_ROOT + '/admin/bans', json=[
+            {'username': 'validusername', 'expiry': test_ban_expiry + 20},
+            {'username': 'anothervalid', 'bans': test_ban_expiry + 50},
+        ])
+        # now more than ever, unauthenticated must be unauthorized
+        self.assertEqual(resp.status_code, 401, 'unauthenticated MUST be 401')
+
+    def test_set_one(self):
+        """Test POST /admin/bans/{}"""
+        # using admin session: on
+        session.post(API_ROOT + '/debug/1')
+
+        resp = session.post(API_ROOT + '/admin/bans/yetanother',
+                            json={'expiry': test_ban_expiry + 20})
+        # success is blank
+        self.assertEqual(resp.status_code, 204, 'unsuccessful POST')
+
+        # make sure it was set
+        resp = session.get(API_ROOT + '/admin/bans/yetanother')
+        self.assertEqual(resp.status_code, 200, 'POST never set yetanother')
+        resp = resp.json()
+        self.assertEqual(resp['expiry'], test_ban_expiry + 20, 'wrong expiry')
+
+        # make sure invalid data errors
+        resp = session.post(API_ROOT + '/admin/bans/yetanother',
+                            data={'thundercross': 'splitattack!'})
+        self.assertEqual(resp.status_code, 400, 'non-JSON never errored')
+        resp = session.post(API_ROOT + '/admin/bans/yetanother',
+                            json={'expiry': int(time.time()) - 2})
+        self.assertEqual(resp.status_code, 400, 'expiry in past never errored')
+        resp = session.post(API_ROOT + '/admin/bans/yetanother',
+                            json={'expiry': 'max'})
+        self.assertEqual(resp.status_code, 400, 'non-int expiry never errored')
+
+        # using admin session: off
+        session.post(API_ROOT + '/debug/0')
+
+        resp = session.post(API_ROOT + '/admin/bans/yetanother',
+                            json={'expiry': test_ban_expiry + 50})
+        # you know the drill
+        self.assertEqual(resp.status_code, 401, 'unauthenticated MUST be 401')
+
+    def test_unban(self):
+        """Test DELETE /admin/bans/{}"""
+        # using admin session: on
+        session.post(API_ROOT + '/debug/1')
+
+        session.post(API_ROOT + '/admin/bans/yetanother',
+                     json={'expiry': None})
+        # unban the user
+        resp = session.delete(API_ROOT + '/admin/bans/yetanother')
+        # blank response on success
+        self.assertEqual(resp.status_code, 204, 'unban unsuccessful')
+
+        # using admin session: off
+        session.post(API_ROOT + '/debug/0')
+
+        resp = session.delete(API_ROOT + '/admin/bans/yetanother')
+        # unauthenticated, unauthorized
+        self.assertEqual(resp.status_code, 401, 'unauthenticated MUST be 401')
+
+    def test_banned(self):
+        """Test that bans work"""
+        # using admin session: off
+        session.post(API_ROOT + '/debug/0')
+
+        resp = session.post(API_ROOT + '/users/permbanneduser/login')
+        # banned users get 403ed
+        self.assertEqual(resp.status_code, 403, 'banned did not 403')
+
+class TestClient(unittest.TestCase):
+    """Test miscellaneous endpoint(s)"""
+    @classmethod
+    def setUpClass(cls):
+        """All of these tests requires an admin session."""
+        set_session(0)
+        session.post(API_ROOT + '/debug/1')
+
+    def test_client(self):
+        """Test /admin/client/{}"""
+        resp = session.get(API_ROOT + '/admin/client/0')
+        # 0 is registered when debug is on
+        self.assertEqual(resp.status_code, 200, 'client was unsuccessful')
+
+        resp = resp.json()
+        # response must implement structure
+        self.assertIsInstance(resp, Client, 'response was not Client object')
+
+        # tokens are censored
+        token = resp['token']
+        token_len = len(token)
+        self.assertEqual(token[TOKEN_CENSOR_LEN:],
+                         '*' * (token_len - TOKEN_CENSOR_LEN),
+                         f'token was not censored to {TOKEN_CENSOR_LEN} chars')
+        for i in range(TOKEN_CENSOR_LEN):
+            self.assertNotEqual(token[i], '*',
+                                'asterisks should not appear in tokens')
+
+class TestAuditLogging(unittest.TestCase):
+    """Test audit-logging-related endpoints."""
+    @classmethod
+    def setUpClass(cls):
+        """Do some stuff so that the logs are populated"""
+        # bypass auth
+        session.post(API_ROOT + '/debug/1')
+        set_session(0)
+        # add a ratelimit change
+        session.post(API_ROOT + '/admin/ratelimits/deathly_hallows',
+                     json={'ratelimit': 50})
+        # add a ban
+        session.post(API_ROOT + '/admin/bans/yetanother',
+                     json={'expiry': None})
+        # add an unban
+        session.delete(API_ROOT + '/admin/bans/yetanother')
+
+    def test_logs(self):
+        """Test GET /usage"""
+        resp = session.get(API_ROOT + '/admin/logs')
+        # a well-formed request should always be a 200
+        self.assertEqual(resp.status_code, 200, 'not 200')
+        resp = resp.json()
+        self.assertIsInstance(resp, list, 'not a *list* of AuditLogs')
+        # response items must implement structure
+        self.assertIsInstance(resp[0], AuditLog, 'not a list of *Log*s')
+
+        # match entries with previous actions
+        self.assertEqual(resp[0]['type'], 3, 'last log was not an unban')
+        self.assertEqual(resp[0]['username'], 'kenny2scratch', 'wrong name')
+        self.assertEqual(resp[0]['data'], '"yetanother"', 'not target name')
+        self.assertEqual(resp[1]['type'], 1, '2nd-last log was not a ban')
+        self.assertEqual(resp[2]['type'], 2, '3rd-last log was not dRL')
+
+    # no params test, that was already done in logs
+
+    def test_log(self):
+        """Test GET /usage/{}"""
+        # skip ID validity, that was checked in /logs/{}
+
+        # get specific log to fetch
+        resp = session.get(API_ROOT + '/admin/logs').json()
+        log = resp[-1]
+
+        resp = session.get('%s/admin/logs/%s' % (API_ROOT, log['id']))
+        # existent log should be success
+        self.assertEqual(resp.status_code, 200, 'existent log not 200')
+
+        resp = resp.json()
+        # response must implement structure
+        self.assertIsInstance(resp, AuditLog, 'response not AuditLog object')
+        # check this is actually the same log
+        self.assertEqual(resp, log, 'not the same log')
 
 if __name__ == '__main__':
     unittest.main()
