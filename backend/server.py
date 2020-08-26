@@ -193,8 +193,7 @@ class Server:
         return client_id
 
     async def check_username(self, request):
-        """Check if a username is a valid and existent Scratch username.
-        Raise 400 or 404, respectively, if not
+        """Check if a username is a valid Scratch username. Raise 400 if not.
 
         ``request``: aiohttp.Request object
 
@@ -203,11 +202,6 @@ class Server:
         username = request.match_info.get('username', '')
         if not re.match(USERNAME_REGEX, username):
             raise web.HTTPBadRequest()
-        if self.debug:
-            return username.casefold()
-        async with self.session.get(USERS_API.format(username)) as resp:
-            if resp.status != 200:
-                raise web.HTTPNotFound()
         return username.casefold()
 
     # the business part of the API
@@ -242,7 +236,7 @@ class Server:
             username, int(time.time())
         )) as resp:
             if resp.status != 200:
-                raise web.HTTPNotFound() #likely banned or something
+                raise web.HTTPNotFound() #likely banned or nonexistent
             data = await resp.text()
         data = data.strip()
         if not data:
@@ -280,7 +274,7 @@ class Server:
     async def login(self, request):
         """POST /users/{username}/login"""
         username = await self.check_username(request)
-        if (await self.get_ban(username)) is not None:
+        if (await self.db.get_ban(username)) is not None:
             raise web.HTTPForbidden()
         code = await self.db.start_verification(0, username)
         return web.json_response(Verification(
@@ -353,8 +347,7 @@ class Server:
     async def reset_token(self, request):
         """PATCH /session"""
         session_id = await self.check_session(request)
-        await self.db.reset_token(session_id)
-        return await self.get_user(request)
+        return web.json_response(await self.db.reset_token(session_id))
 
     async def del_user(self, request):
         """DELETE /session"""
@@ -585,7 +578,11 @@ class Server:
         if not self._debug:
             raise web.HTTPNotFound()
         val = int(request.match_info['dibool'])
-        self.debug, self.debug_pass = val & 1, val & 2
+        # if True, client_id-token auth is not required
+        self.debug = bool(val & 1)
+        # if True, verifications are treated as successful
+        # (i.e. pretend the comment was posted)
+        self.debug_pass = bool(val & 2)
         raise web.HTTPNoContent()
 
     async def _file_handler(self, request, WEB_ROOT):

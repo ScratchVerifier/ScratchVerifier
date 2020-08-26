@@ -51,7 +51,10 @@ WHERE session_id=?', (session_id,))
 
     async def new_client(self, session_id):
         if session_id == 0: # 0 means debug mode
-            return {'client_id': 0, 'username': 'Kenny2scratch', 'token': ''}
+            # don't create a client, because other funcs return a dummy one
+            # when under debug mode
+            return {'client_id': 0, 'username': 'Kenny2scratch',
+                    'token': 'This client is newly created.'}
         username = await self.username_from_session(session_id)
         if username is None:
             return None
@@ -66,7 +69,8 @@ token, username) VALUES (?, ?, ?)', (client_id, token, username))
 
     async def get_client(self, session_id):
         if session_id == 0: # 0 means debug mode
-            return {'client_id': 0, 'username': 'Kenny2scratch', 'token': ''}
+            return {'client_id': 0, 'username': 'Kenny2scratch',
+                    'token': 'This is an example token that can be censored.'}
         username = await self.username_from_session(session_id)
         if username is None:
             return None
@@ -79,6 +83,9 @@ WHERE username=?', (username,))
         return dict(row)
 
     async def get_client_info(self, client_id):
+        if client_id == 0: # 0 means debug mode
+            return {'client_id': 0, 'username': 'Kenny2scratch',
+                    'token': 'This is an example token that can be censored.'}
         async with self.lock:
             await self.db.execute('SELECT * FROM scratchverifier_clients \
 WHERE client_id=?', (client_id,))
@@ -89,12 +96,14 @@ WHERE client_id=?', (client_id,))
 
     async def reset_token(self, session_id):
         if session_id == 0: # 0 means debug mode
-            return {'client_id': 0, 'username': 'Kenny2scratch', 'token': ''}
+            return {'client_id': 0, 'username': 'Kenny2scratch',
+                    'token': 'Yes, the token was reset.'}
         username = await self.username_from_session(session_id)
         if username is None:
-            return
+            return None
         await self.db.execute('UPDATE scratchverifier_clients SET token=? \
 WHERE username=?', (token_hex(32), username))
+        return self.get_client(session_id)
 
     async def del_client(self, session_id):
         if session_id == 0: # 0 means debug mode
@@ -133,6 +142,7 @@ expiry<=?', (int(time.time()),))
 WHERE session_id=?', (session_id,))
             expiry = await self.db.fetchone()
         if expiry is None:
+            # "expired" if session doesn't exist in the first place
             return True
         expiry = expiry[0]
         if time.time() > expiry:
