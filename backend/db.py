@@ -5,11 +5,7 @@ from secrets import token_bytes, token_hex, randbits
 from hashlib import sha256
 import asyncio
 import aiosqlite as sql
-
-DATABASE_FILENAME = 'scratchverifier.db'
-USERS_API = 'https://api.scratch.mit.edu/users/{}'
-VERIFY_EXPIRY = 1800 # 30 minutes
-SESSION_EXPIRY = 31540000 # 1 year in seconds
+from responses import *
 
 class Database:
     def __init__(self, session):
@@ -137,8 +133,6 @@ expiry<=?', (int(time.time()),))
         return session_id
 
     async def get_expired(self, session_id):
-        if session_id == 0: # 0 means debug mode
-            return False
         async with self.lock:
             await self.db.execute('SELECT expiry FROM scratchverifier_sessions \
 WHERE session_id=?', (session_id,))
@@ -213,21 +207,24 @@ VALUES (?, ?, ?, ?)', (client_id, username, int(time.time()), 3 - succ))
 
     async def get_logs(self, table='logs', **params):
         query = f'SELECT * FROM scratchverifier_{table} WHERE 1=1'
+        id_col = 'log_id' if table == 'logs' else 'id'
+        time_col = 'log_time' if table == 'logs' else 'time'
+        type_col = 'log_type' if table == 'logs' else 'type'
         if 'start' in params:
-            query += ' AND log_id<:start'
+            query += f' AND {id_col}<:start'
         if 'before' in params:
-            query += ' AND log_time<=:before'
+            query += f' AND {time_col}<=:before'
         if 'end' in params:
-            query += ' AND log_id>:end'
+            query += ' AND {id_col}>:end'
         if 'after' in params:
-            query += ' AND log_time>=:after'
+            query += ' AND {time_col}>=:after'
         if 'client_id' in params:
             query += ' AND client_id=:client_id'
         if 'username' in params:
             query += ' AND username=:username'
         if 'type' in params:
-            query += ' AND log_type=:type'
-        query += ' ORDER BY log_id DESC LIMIT :limit'
+            query += ' AND {type_col}=:type'
+        query += f' ORDER BY {id_col} DESC LIMIT :limit'
         for k, v in params.items():
             if k in {'start', 'before', 'end', 'after', 'client_id', 'type'}:
                 params[k] = int(v)
@@ -238,9 +235,10 @@ VALUES (?, ?, ?, ?)', (client_id, username, int(time.time()), 3 - succ))
         return [dict(i) for i in rows]
 
     async def get_log(self, log_id, table='logs'):
+        id_col = 'log_id' if table == 'logs' else 'id'
         async with self.lock:
             await self.db.execute(f'SELECT * FROM scratchverifier_{table} \
-WHERE log_id=?', (log_id,))
+WHERE {id_col}=?', (log_id,))
             row = await self.db.fetchone()
         if row is None:
             return None
@@ -260,11 +258,7 @@ WHERE log_id=?', (log_id,))
 WHERE username=?', (username,))
             row = await self.db.fetchone()
         if row is None:
-            await self.db.execute('INSERT INTO scratchverifier_ratelimits \
-(username, ratelimit) VALUES (:username, :ratelimit)',
-                                  {'username': username,
-                                   'ratelimit': DEFAULT_RATELIMIT})
-            return await self.get_ratelimit(username)
+            return None
         return row
 
     async def set_ratelimits(self, data, performer):
@@ -309,7 +303,7 @@ WHERE username=?', (username,))
         await self.db.executemany('INSERT OR REPLACE INTO scratchverifier_bans \
 (username, expiry) VALUES (:username, :expiry)', data)
         await self.db.executemany('DELETE FROM scratchverifier_clients \
-WHERE username=?', (i['username'] for i in data))
+WHERE username=?', ((i['username'],) for i in data))
         await self.db.executemany(
             'INSERT INTO scratchverifier_auditlogs \
 (username, time, type, data) VALUES \
@@ -333,6 +327,6 @@ WHERE username=?', (username,))
                 'username': performer,
                 'time': int(time.time()),
                 'type': 3, # unban
-                'data': json.dumps(performer)
+                'data': json.dumps(username)
             }
         )

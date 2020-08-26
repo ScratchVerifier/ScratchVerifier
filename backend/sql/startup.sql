@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS scratchverifier_bans (
 );
 CREATE TABLE IF NOT EXISTS scratchverifier_auditlogs (
   -- log ID to look up by
-  log_id integer PRIMARY KEY AUTOINCREMENT,
+  id integer PRIMARY KEY AUTOINCREMENT,
   -- performer of action
   username text,
   -- unix epoch time of log
