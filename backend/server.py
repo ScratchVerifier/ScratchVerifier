@@ -15,10 +15,11 @@ COMMENTS_API = 'https://scratch.mit.edu/site-api/comments/user/{}/\
 ?page=1&salt={}'
 USERNAME_REGEX = re.compile('^[A-Za-z0-9_-]{3,20}$')
 COMMENTS_REGEX = re.compile(r"""<div id="comments-\d+" class="comment +" data-comment-id="\d+">.*?<div class="actions-wrap">.*?<div class="name">\s+<a href="/users/([_a-zA-Z0-9-]+)">\1</a>\s+</div>\s+<div class="content">(.*?)</div>""", re.S)
-DEFAULT_RATELIMIT = 30
-TOKEN_CENSOR_LEN = 8
-DEFAULT_LOG_LIMIT = 100
-MAX_LOG_LIMIT = 500
+DEFAULT_RATELIMIT = 30 # max requests per LIMIT_PER_TIME
+LIMIT_PER_TIME = 60 # in seconds
+TOKEN_CENSOR_LEN = 8 # how many characters to show in admin-viewed tokens
+DEFAULT_LOG_LIMIT = 100 # how many log entries to show if limit is unspecified
+MAX_LOG_LIMIT = 500 # how many /usage logs are allowed to show at once
 
 class Server:
     def __init__(self, hook_secret, discord_hook, admins, name=None):

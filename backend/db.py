@@ -286,6 +286,11 @@ WHERE username=?', (username,))
             row = await self.db.fetchone()
         if row is None:
             return None
+        if row['expiry'] is not None and row['expiry'] < time.time():
+            # ban has expired, delete it and return no ban
+            await self.db.execute('DELETE FROM scratchverifier_bans \
+WHERE username=?', (username,))
+            return None
         return row
 
     async def set_bans(self, data, performer):
