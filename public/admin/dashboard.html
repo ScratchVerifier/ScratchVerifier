@@ -1,138 +1,151 @@
 <!DOCTYPE html>
 <html style="width: 100%">
-	<head>
-		<title>ScratchVerifier Admin</title>
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="shortcut icon" type="image/png" href="/site/resources/favicon.ico">
-        <script src="/site/resources/admincheck.js"></script>
-		<style>
-			* {
-			font-family: sans-serif;	
-			}
-			
-			header {
-				background-color: #01B5DC;
-				padding: 20px;
-				color: white;
-			}
-			
-			.headertitle {
-				margin: 0px;
-			}
-			
-			.title {
-				text-align: center;	
-			}
-			
-			.content {
-				display: flex;
-				justify-content: space-between;
-				align-items: flex-start;
-				flex-wrap: wrap;
-				padding: 30px;
-			}
-			
-			.lookup {
-				width: 350px;
-				border: 2px solid black;
-				padding: 10px;
-				margin-bottom: 10px;
-			}
-			
-			.IDinput {
-				width: 97%;
-				height: 35px;
-				border: 2px solid black;
-				padding: 3px;
-				border-radius: 4px;
-			}
-			
-			.lookupbutton {
-				float: right;
-				background-color: #01B5DC;
-				color: white;
-				padding: 10px;
-				border: none;
-				border-radius: 5px;
-				margin: 10px 0px 0 5px;
-			}
-			
-			.lookupbutton:hover {
-				background-color: #009dbf; 	
-			}
-			
-			.logs {
-				padding: 10px;
-				background-color: #bbbbbb;
-				width: 1000px;
-			}
-			
-			.logbox {
-				width: 110px;
-				background-color: white;
-				border: 2px solid black;
-				padding: 4px;
-				border-radius: 3px;
-				margin-top: 5px;
-			}
-			
-			.fetchbutton {
-				width: 50px;
-				background-color: white;
-				border: 2px solid black;
-				color: black;
-				padding: 4px;
-				border-radius: 10px;
-				margin: 5px 0 0 10px;
-				font-weight: 700;
-			}
-			
-			.fetchbutton:hover {
-				background-color: #e8e8e8; 	
-			}
-			
-			.logstable {
-				width: 100%;
-				height: 400px;
-			}
-			
-			table, th, td {
-				border: 2px solid black;
-				border-collapse: collapse;
-				text-align: left;
-				padding: 3px;
-			}
-			
-			th {
-				height: 20px;	
-			}
-		</style>
-	</head>
-	<body style="margin: 0; width: 100%">
-		<header>
-			<h1 class="headertitle">ScratchVerifier Admin</h1>
-		</header>
-		<h2 class="title">Main Panel</h2>
-		<div class="content">
-			<div class="lookup">
-				<h3 style="margin-top: 0px;">Lookup Client By UID</h3>
-				<input type="text" placeholder="User ID" id="IDinput" class="IDinput">
-				<button class="lookupbutton" onclick="lookup()">Lookup</button>
-            </div>
-            <div class="lookup">
-				<h3 style="margin-top: 0px;">Unban Username</h3>
-				<input type="text" placeholder="Username" id="uname" class="IDinput">
-				<button class="lookupbutton" onclick="unban()">Unban</button>
-            </div>
-            <div class="logs">
-                <input type="text" class="logbox" id="a_username" placeholder="Username">
-                <input type="text" class="logbox" id="a_beforeafter" placeholder="Before-After">
-                <input type="text" class="logbox" id="a_startend" placeholder="Start-End">
-                <input type="text" class="logbox" id="a_limit" placeholder="Limit">
-                <button class="fetchbutton" onclick="fetchAudit()">Fetch</button>
-                <br>
-                <br>
-                <table class="logstable">
+
+<head>
+    <title>ScratchVerifier Admin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" type="image/png" href="/site/resources/favicon.ico">
+    <script src="/site/resources/admincheck.js"></script>
+    <style>
+        * {
+            font-family: sans-serif;
+        }
+
+        header {
+            background-color: #01B5DC;
+            padding: 20px;
+            color: white;
+        }
+
+        .headertitle {
+            margin: 0px;
+        }
+
+        .title {
+            text-align: center;
+        }
+
+        .content {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            padding: 30px;
+        }
+
+        .lookup {
+            width: 350px;
+            border: 2px solid black;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .IDinput {
+            width: 97%;
+            height: 35px;
+            border: 2px solid black;
+            padding: 3px;
+            border-radius: 4px;
+        }
+
+        .lookupbutton {
+            float: right;
+            background-color: #01B5DC;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            margin: 10px 0px 0 5px;
+        }
+
+        .lookupbutton:hover {
+            background-color: #009dbf;
+        }
+
+        .logs {
+            padding: 10px;
+            background-color: #bbbbbb;
+            width: 1000px;
+        }
+
+        .logbox {
+            width: 110px;
+            background-color: white;
+            border: 2px solid black;
+            padding: 4px;
+            border-radius: 3px;
+            margin-top: 5px;
+        }
+
+        .fetchbutton {
+            width: 50px;
+            background-color: white;
+            border: 2px solid black;
+            color: black;
+            padding: 4px;
+            border-radius: 10px;
+            margin: 5px 0 0 10px;
+            font-weight: 700;
+        }
+
+        .fetchbutton:hover {
+            background-color: #e8e8e8;
+        }
+
+        .logstable {
+            width: 100%;
+            height: 400px;
+        }
+
+        table,
+        th,
+        td {
+            border: 2px solid black;
+            border-collapse: collapse;
+            text-align: left;
+            padding: 3px;
+        }
+
+        th {
+            height: 20px;
+        }
+    </style>
+</head>
+
+<body style="margin: 0; width: 100%">
+    <header>
+        <h1 class="headertitle">ScratchVerifier Admin</h1>
+    </header>
+    <h2 class="title">Main Panel</h2>
+    <div class="content">
+        <div class="lookup">
+            <h3 style="margin-top: 0px;">Lookup Client By UID</h3>
+            <input type="text" placeholder="User ID" id="IDinput" class="IDinput">
+            <button class="lookupbutton" onclick="lookup()">Lookup</button>
+        </div>
+        <div class="lookup">
+            <h3 style="margin-top: 0px;">(Un)ban Username</h3>
+            <input type="text" placeholder="Username" id="uname" class="IDinput"><br><br>
+            <input type="text" placeholder="Time (minutes, 0 = infinite, only for bans)" id="bantime" class="IDinput">
+            <button class="lookupbutton" onclick="unban()">Unban</button>
+            <button class="lookupbutton" onclick="ban()">Ban</button>
+
+        </div>
+        <div class="logs">
+            <input type="text" class="logbox" id="a_username" placeholder="Username">
+            <input type="text" class="logbox" id="a_startend" placeholder="Start">
+            <input type="text" class="logbox" id="a_limit" placeholder="Limit">
+            <select id="a_type">
+                <option data-value="0">All</option>
+                <option data-value="1">Ban</option>
+                <option data-value="2">Ratelimit Change</option>
+                <option data-value="3">Unban</option>
+            </select>
+            <button class="fetchbutton" onclick="fetchAudit()">Fetch</button>
+            <br>
+            <br>
+            <table class="logstable">
+                <thead>
                     <tr>
                         <th>ID</th>
                         <th>Username</th>
@@ -140,69 +153,89 @@
                         <th>Log Type</th>
                         <th>Data</th>
                     </tr>
-                    <div style="display:inherit;margin:0;" id="a_logList"></div>
-                </table>
-            </div>
+                </thead>
+                <tbody id="a_logList"></tbody>
+            </table>
         </div>
-        </div>
-        <script>
-            function lookup(){
-                location.replace("/site/admin/user.html?"+document.querySelector("#IDinput").value)
+    </div>
+    </div>
+    <script>
+        function lookup() {
+            location.replace("/site/admin/user.html?" + document.querySelector("#IDinput").value)
+        }
+    </script>
+    <script>
+        function fromSeconds(secs) {
+            const date = new Date(secs * 1000)
+            return date.toTimeString().split(" ")[0] + " " + date.toDateString()
+        }
+        const auditLogElement = document.getElementById("a_logList")
+        const auditMap = {
+            1: "User Ban",
+            2: "Rate Limit Update",
+            3: "User Unban"
+        }
+        function unban() {
+            fetch("/admin/bans/" + document.getElementById("uname").value, { method: "delete" })
+        }
+        function ban() {
+            if (document.getElementById("bantime").value == "0") {
+                fetch("/admin/bans/" + document.getElementById("uname").value, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ "expiry": null }) })
+                return
             }
-        </script>
-            <script>
-                function fromSeconds(secs) {
-                    const date = new Date(secs * 1000)
-                    return date.toTimeString().split(" ")[0] + " " + date.toDateString()
-                }
-                const auditLogElement = document.getElementById("a_logList")
-                const auditMap = {
-                    1: "User Ban",
-                    2: "Rate Limit Update",
-                    3: "User Unban"
-                }
-                function unban(){
-                    fetch("/admin/bans/"+document.getElementById("uname").value,{method:"delete"})
-                }
-                function fetchAudit() {
-                    fetch("/admin/logs")
-                        .then(response => {
-                            if (response.ok) {
-                                return response.json()
-                            } else {
-                                localStorage.setItem("isAdmin", "false")
-                        location.replace("/site/admin/access_denied.html")
-                            }
-                        })
-                        .then(logArray => {
-                            auditLogElement.innerHTML = ""
-                            logArray.forEach(log => {
-                                const parent = document.createElement("td")
-                                const data = Array(5)
-                                for (var i = 0; i < 5; i++) {
-                                    data[i] = document.createElement("td")
-                                }
-                                data[0].innerText = log.id
-                                data[1].innerText = log.performer
-                                data[2].innerText = fromSeconds(log.time)
-                                data[3].innerText = auditMap[log.type]
-                                const dataObj = JSON.parse(log.data)
-                                let dataString = []
-                                Object.keys(dataObj).forEach(key=>{
-                                    dataString.push(key+": "+dataObj[key])
-                                })
-                                data[4].innerText = dataString.join(", ")
-                                data.forEach(a=>{
-                                    parent.appendChild(a)
-                                })
-                                auditLogElement.appendChild(parent)
-                            })
-                        })
-                }
-                
-            </script><br><br>
-            <a href="/site">Return to Site</a>
-            <a href="/site/admin/banlist.html">Ban List</a>
+            fetch("/admin/bans/" + document.getElementById("uname").value, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ "expiry": Math.round((Date.now() / 1000) + (60 * (+document.getElementById("bantime").value))) }) })
 
-	</body>
+        }
+        function fetchAudit() {
+            function getVal(id){return document.getElementById(id).value}
+            var query = []
+            if (getVal("a_username")) query.push("username="+getVal("a_username"))
+            if (getVal("a_startend")) query.push("start="+getVal("a_startend"))
+
+            if (getVal("a_limit")) query.push("limit="+getVal("a_limit"))
+            var opt = document.querySelector("select#a_type")
+            var val = opt.options[opt.selectedIndex].getAttribute("data-value")
+            if (val !== "0"){
+                query.push("type="+val)
+            }
+            fetch("/admin/logs?"+query.join("&"))
+                .then(response => {
+                    if (response.ok) {
+                        return response.json()
+                    }
+                })
+                .then(logArray => {
+                    auditLogElement.innerHTML = ""
+                    logArray.forEach(log => {
+                        const parent = document.createElement("tr")
+                        const data = Array(5)
+                        for (var i = 0; i < 5; i++) {
+                            data[i] = document.createElement("td")
+                        }
+                        data[0].innerText = log.id
+                        data[1].innerText = log.username
+                        data[2].innerText = fromSeconds(log.time)
+                        data[3].innerText = auditMap[log.type]
+                        const dataObj = JSON.parse(log.data)
+                        let dataString = []
+                        Object.keys(dataObj).forEach(key => {
+                            dataString.push(key + ": " + dataObj[key])
+                        })
+                        data[4].innerText = dataString.join(", ")
+                        data.forEach(a => {
+                            parent.appendChild(a)
+                        })
+                        auditLogElement.appendChild(parent)
+                    })
+                })
+        }
+
+    </script><br><br>
+    <center>
+        <a href="/site">Return to Site</a><br>
+        <a href="/site/admin/banlist.html">Ban List</a>
+    </center>
+
+</body>
+
 </html>

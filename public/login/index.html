@@ -54,16 +54,20 @@ function fallbackCopyTextToClipboard(text) {
 
   document.body.removeChild(textArea);
 }
-function copyTextToClipboard(text) {
+function copyTextToClipboard(text,cb) {
   if (!navigator.clipboard) {
     fallbackCopyTextToClipboard(text);
     return;
   }
   navigator.clipboard.writeText(text).then(function() {
     console.log('Async: Copying to clipboard was successful!');
+    if (cb)cb()
   }, function(err) {
     console.error('Async: Could not copy text: ', err);
   });
+}
+function openlink(){
+    open(`https://scratch.mit.edu/users/${document.getElementById("Username").value}/`,"_new")
 }
 function step1(){
   document.querySelector(".LoginPage_Content_1").style.display = "none"
@@ -87,7 +91,6 @@ function step1(){
       document.querySelector(".LoginPage_Content_2").style.display = ""
       document.querySelector(".loading").style.display = "none"
       document.getElementById("code").value = data.code
-      document.getElementById("copyAndOpen").setAttribute("href",`https://scratch.mit.edu/users/${document.getElementById("Username").value}/`)
     }
   })
 }
@@ -136,7 +139,7 @@ function step2(){
       <button type="submit" class="smilejs-ripple submit">Continue</button>
     </form><br>
     <button onclick="copyTextToClipboard(document.querySelector('#code').value)" class="smilejs-ripple submit">Copy code</button>
-    <a target="_new" id="copyAndOpen" onclick="copyTextToClipboard(document.querySelector('#code').value)" class="smilejs-ripple submit">Copy & Open</a>
+    <button id="copyAndOpen" onclick="copyTextToClipboard(document.querySelector('#code').value,openlink);" class="smilejs-ripple submit">Copy & Open Profile</button>
 
   </div>
 </div>
