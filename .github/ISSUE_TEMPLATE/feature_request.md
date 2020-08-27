@@ -3,7 +3,7 @@ name: Feature request
 about: Suggest an idea for this project
 title: "[FR] Title"
 labels: feature
-assignees: Semisol
+assignees: Kenny2github, Semisol
 
 ---
 

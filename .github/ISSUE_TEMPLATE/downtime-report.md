@@ -4,7 +4,7 @@ about: If there is any significant downtime on the system, please report it usin
   this template. Any request errors should be made with a backend bug report template.
 title: "[Downtime]"
 labels: bug, help wanted
-assignees: Semisol
+assignees: Kenny2github, Semisol
 
 ---
 
