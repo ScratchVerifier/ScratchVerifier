@@ -215,15 +215,15 @@ VALUES (?, ?, ?, ?)', (client_id, username, int(time.time()), 3 - succ))
         if 'before' in params:
             query += f' AND {time_col}<=:before'
         if 'end' in params:
-            query += ' AND {id_col}>:end'
+            query += f' AND {id_col}>:end'
         if 'after' in params:
-            query += ' AND {time_col}>=:after'
+            query += f' AND {time_col}>=:after'
         if 'client_id' in params:
             query += ' AND client_id=:client_id'
         if 'username' in params:
             query += ' AND username=:username'
         if 'type' in params:
-            query += ' AND {type_col}=:type'
+            query += f' AND {type_col}=:type'
         query += f' ORDER BY {id_col} DESC LIMIT :limit'
         for k, v in params.items():
             if k in {'start', 'before', 'end', 'after', 'client_id', 'type'}:
