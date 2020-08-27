@@ -21,7 +21,7 @@
 			<link rel="stylesheet" type="text/css" href="/site/resources/stylesheet.css">
 			<a href="/site" target="_parent"><img src="/site/resources/favicon.ico" width="64px" height="64px" id="home"></a>
 			<h1 id="t" style="margin-bottom:0px">ScratchVerifier</h1>
-			<a href="/site/login/" class="hbutton smilejs-ripple" target="_parent">Log In/Sign Up</a>
+			<a href="/site/dashboard/" class="hbutton smilejs-ripple" target="_parent">Log In/Sign Up</a>
 			<!--<a href="" class="hbutton" target="_parent">Placeholder</a>-->
 		</div><div class="loading"><br><br><center>
       <svg xmlns="http://www.w3.org/2000/svg" width="38" height="38" viewBox="0 0 38 38" stroke="#000">
@@ -54,16 +54,20 @@ function fallbackCopyTextToClipboard(text) {
 
   document.body.removeChild(textArea);
 }
-function copyTextToClipboard(text) {
+function copyTextToClipboard(text,cb) {
   if (!navigator.clipboard) {
     fallbackCopyTextToClipboard(text);
     return;
   }
   navigator.clipboard.writeText(text).then(function() {
     console.log('Async: Copying to clipboard was successful!');
+    if (cb)cb()
   }, function(err) {
     console.error('Async: Could not copy text: ', err);
   });
+}
+function openlink(){
+    open(`https://scratch.mit.edu/users/${document.getElementById("Username").value}/`,"_new")
 }
 function step1(){
   document.querySelector(".LoginPage_Content_1").style.display = "none"
@@ -75,6 +79,10 @@ function step1(){
       document.querySelector(".LoginPage_Content_1").style.display = ""
       document.querySelector(".loading").style.display = "none"
 
+    } else if (e.status === 403){
+        document.querySelector("#err1").innerHTML = "This account is temporarily banned from using ScratchVerifier."
+      document.querySelector(".LoginPage_Content_1").style.display = ""
+      document.querySelector(".loading").style.display = "none" 
     } else {
       return e.json()
     }
@@ -98,14 +106,12 @@ function step2(){
     }
   }).then(data=>{
     if (typeof data === "object"){
-      localStorage.setItem("token",data.session)
+      localStorage.setItem("isAdmin",data.admin)
       location.replace("/site/dashboard")
     }
   })
 }
-if (localStorage.getItem("token")){
-  location.replace("/site/dashboard")
-}
+
 </script>
     		<div class="LoginPage_Content_1 LoginPage_Content">
 			<img src="/site/resources/ScratchVerifier.png" width="50%">
@@ -133,6 +139,7 @@ if (localStorage.getItem("token")){
       <button type="submit" class="smilejs-ripple submit">Continue</button>
     </form><br>
     <button onclick="copyTextToClipboard(document.querySelector('#code').value)" class="smilejs-ripple submit">Copy code</button>
+    <button id="copyAndOpen" onclick="copyTextToClipboard(document.querySelector('#code').value,openlink);" class="smilejs-ripple submit">Copy & Open Profile</button>
 
   </div>
 </div>

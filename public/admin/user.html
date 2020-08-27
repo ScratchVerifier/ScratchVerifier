@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html style="width: 100%">
+
+<head>
+    <title>ScratchVerifier Admin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" type="image/png" href="/site/resources/favicon.ico">
+    <script src="/site/resources/admincheck.js"></script>
+    <style>
+        * {
+            font-family: sans-serif;
+        }
+
+        header {
+            background-color: #01B5DC;
+            padding: 20px;
+            color: white;
+        }
+
+        .headertitle {
+            margin: 0px;
+        }
+
+        .title {
+            text-align: left;
+        }
+
+        .content {
+            margin-left: 20px;
+        }
+
+        button {
+            background-color: #01B5DC;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            width: 150px;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #009dbf;
+        }
+
+        .input {
+            width: 300px;
+            height: 45px;
+            border: 2px solid black;
+            padding: 3px;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        /*.button {
+				background-color: #01B5DC;
+				color: white;
+				padding: 10px;
+				border: none;
+				border-radius: 5px;
+				width: 85px;
+				height: 45px;
+				text-align: center;
+			}*/
+
+        .deletebutton {
+            background-color: #c90000;
+            margin-top: 0;
+        }
+
+        .deletebutton:hover {
+            background-color: #db2121;
+        }
+    </style>
+</head>
+
+<body style="margin: 0; width: 100%">
+    <header>
+        <h1 class="headertitle">ScratchVerifier Admin</h1>
+    </header>
+    <div class="content">
+        <h2 class="title">User Profile</h2>
+        <br>
+        <div class="apikey">
+            <h3 class="subtitle">API Key</h3>
+            <button class="button" id="copy" onclick="copyKey()">Copy</button>
+        </div>
+        <br>
+        <div class="requests">
+            <h3 class="subtitle">Requests Per Minute</h3>
+            <input type="number" placeholder="30" id="ratelimit" class="input">
+            <button class="button" id="set" onclick="setRatelimit()">Set</button>
+        </div>
+        <br>
+        <div class="lock">
+            <h3 class="subtitle">Ban User</h3>
+            <input type="number" placeholder="Ban Time (minutes) (none = permanent)" id="bantime" class="input">
+            <button class="button" id="set" onclick="ban()">Ban</button>
+        </div>
+        <br>
+        <div class="dangerzone">
+            <h3 class="subtitle">User ID: <span id="userid"></span></h3>
+            <h3 class="subtitle">Username: <span id="username"></span></h3>
+
+            <button class="deletebutton" id="set" onclick="deleteClient()">Delete</button>
+        </div>
+    </div>
+    <script>
+        var gData = {}
+        if (location.search.replace("?", "") === "" && location.search.replace("?", "").match(/[0-9]+/)) {
+            location.replace("/site/admin/dashboard.html")
+        } else {
+            fetch("/admin/client/" + location.search.replace("?", ""))
+                .then(response => {
+                    if (response.ok) {
+                        return response.json()
+                    } else if (response.status === 404) {
+                        location.replace("/site/admin/dashboard.html")
+                    } else {
+                        localStorage.setItem("isAdmin", "false")
+                        location.replace("/site/admin/access_denied.html")
+                    }
+                })
+                .then(data => {
+                    document.getElementById("userid").innerText = data.client_id
+                    document.getElementById("username").innerText = data.username
+                    document.getElementById("ratelimit").value = data.ratelimit
+                    gData = data
+                })
+        }
+        function deleteClient() {
+            fetch("/admin/bans/" + gData.username, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ "expiry": Math.round((Date.now() / 1000) + 1) }) })
+        }
+        function ban() {
+            if (document.getElementById("bantime").value == ""){
+                fetch("/admin/bans/" + gData.username, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ "expiry": null }) })
+
+                return
+            }
+            fetch("/admin/bans/" + gData.username, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ "expiry": Math.round((Date.now() / 1000) + (60 * (+document.getElementById("bantime").value))) }) })
+        }
+        function setRatelimit() {
+            fetch("/admin/ratelimits/" + gData.username, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ ratelimit: +document.getElementById("ratelimit").value }) })
+        }
+        function copyKey() {
+            copyTextToClipboard(gData.token)
+        }
+        function fallbackCopyTextToClipboard(text) {
+            var textArea = document.createElement("textarea");
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+
+            try {
+                var successful = document.execCommand('copy');
+                var msg = successful ? 'successful' : 'unsuccessful';
+                console.log('Fallback: Copying text command was ' + msg);
+            } catch (err) {
+                console.error('Fallback: Oops, unable to copy', err);
+            }
+
+            document.body.removeChild(textArea);
+        }
+        function copyTextToClipboard(text) {
+            if (!navigator.clipboard) {
+                fallbackCopyTextToClipboard(text);
+                return;
+            }
+            navigator.clipboard.writeText(text).then(function () {
+                console.log('Async: Copying to clipboard was successful!');
+            }, function (err) {
+                console.error('Async: Could not copy text: ', err);
+            });
+        }
+    </script><br><br>
+        <a href="/site/admin/dashboard.html">Return to Dashboard</a>
+
+</body>
+
+</html>

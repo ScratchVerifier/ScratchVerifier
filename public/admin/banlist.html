@@ -1,0 +1,24 @@
+<pre>
+
+</pre>
+<pre>
+    <a href="/site/admin/dashboard.html">Return to Dashboard</a>
+</pre>
+<script>
+    window.onload = ()=>{
+        function fromSeconds(secs) {
+            if (secs === null) return "permanent"
+                    const date = new Date(secs * 1000)
+                    return date.toTimeString().split(" ")[0] + " " + date.toDateString()
+        }
+        fetch("/admin/bans")
+        .then(data=>{
+            if (data.ok) return data.json()
+        })
+        .then(users=>{
+            users.forEach(user=>{
+                document.querySelector("pre").innerHTML += `    ${user.username}, ${fromSeconds(user.expiry)}\n`
+            })
+        })
+    }
+</script>

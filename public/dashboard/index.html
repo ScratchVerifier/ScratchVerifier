@@ -21,7 +21,7 @@
 			<link rel="stylesheet" type="text/css" href="/site/resources/stylesheet.css">
 			<a href="/site" target="_parent"><img src="/site/resources/favicon.ico" width="64px" height="64px" id="home"></a>
 			<h1 id="t" style="margin-bottom:0px">ScratchVerifier</h1>
-			<a href="/site/login/" class="hbutton smilejs-ripple" target="_parent">Log In/Sign Up</a>
+			<a href="/site/dashboard/" class="hbutton smilejs-ripple" target="_parent">Log In/Sign Up</a>
 			<!--<a href="" class="hbutton" target="_parent">Placeholder</a>-->
 		</div><div class="loading"><br><br><center>
       <svg xmlns="http://www.w3.org/2000/svg" width="38" height="38" viewBox="0 0 38 38" stroke="#000">
@@ -67,8 +67,7 @@
   function logout(){
     document.querySelector("#dashboard").style.display = "none"
     document.querySelector(".loading").style.display = ""
-    fetch("/session/" + localStorage.getItem("token") + "/logout",{method:"POST"}).then(e=>{
-      localStorage.removeItem('token');
+    fetch("/session/logout",{method:"POST"}).then(e=>{
       location.reload()
     })
   }
@@ -76,8 +75,7 @@
     if (confirm("Log out all sessions?")){
       document.querySelector("#dashboard").style.display = "none"
       document.querySelector(".loading").style.display = ""
-      fetch("/users/" + window.username + "/logout?session=" + localStorage.getItem("token"),{method:"POST"}).then(e=>{
-        localStorage.removeItem('token');
+      fetch("/users/" + window.username + "/logout",{method:"POST"}).then(e=>{
         location.reload()
       })
     }
@@ -85,14 +83,14 @@
   function createApp(){
     document.querySelector("#createApp").style.display = "none"
     document.querySelector(".loading").style.display = ""
-    fetch("/session/" + localStorage.getItem("token"),{method:"PUT"}).then(e=>{
+    fetch("/session",{method:"PUT"}).then(e=>{
       window.onload()
     })
   }
   function regenerateToken(){
     document.querySelector("#dashboard").style.display = "none"
     document.querySelector(".loading").style.display = ""
-    fetch("/session/" + localStorage.getItem("token"),{method:"PATCH"}).then(e=>{
+    fetch("/session",{method:"PATCH"}).then(e=>{
       window.onload()
     })
   }
@@ -100,19 +98,18 @@
     if (confirm("Are you sure to delete this app?")){
       document.querySelector("#dashboard").style.display = "none"
       document.querySelector(".loading").style.display = ""
-      fetch("/session/" + localStorage.getItem("token"),{method:"DELETE"}).then(e=>{
+      fetch("/session",{method:"DELETE"}).then(e=>{
         window.onload()
       })
     }
   }
 window.onload = ()=>{
   document.querySelector(".loading").style.display = ""
-  if (typeof localStorage.getItem("token") !== "string"){
+  if (!document.cookie.includes("session=")){
     location.replace("/site/login")
   } else {
-    fetch("/session/" + localStorage.getItem("token")).then(e=>{
+    fetch("/session").then(e=>{
       if (e.status === 401){
-        localStorage.removeItem("token")
         location.replace("/site/login")
       } else if (e.status === 404){
         document.querySelector("#createApp").style.display = ""
@@ -130,6 +127,12 @@ window.onload = ()=>{
       }
     })
   }
+  if (localStorage.getItem("isAdmin") === "true"){
+      document.querySelector("#dashboardLink").setAttribute("style","display:unset;")
+      document.querySelector("#dashboardLink1").setAttribute("style","display:unset;")
+
+  }
+
 }
 </script>
 <div class="LoginPage_Content" style="display:none;" id="createApp">
@@ -137,7 +140,10 @@ window.onload = ()=>{
 <span>You have not registered yet, click below to create an app.</span><br><br>
 <div class="Login_Box">
   <button onclick="createApp()" class="smilejs-ripple submit">Create Client</button>
+  
 </div>
+<a id="dashboardLink1" href="/site/admin/dashboard.html" style="display:none;">Go to Admin Dashboard</a>
+
 </div>
 <div class="LoginPage_Content" style="display:none;" id="dashboard">
 <h1>Dashboard</h1><br>
@@ -149,7 +155,9 @@ window.onload = ()=>{
 <button onclick="deleteApp()" class="smilejs-ripple submit">Delete Account</button>
 <h2>Sign out</h2>
 <button onclick="logout()" class="smilejs-ripple submit">Sign out</button><br><br>
-<button onclick="logoutAll()" class="smilejs-ripple submit">Sign out from all devices</button>
+<button onclick="logoutAll()" class="smilejs-ripple submit">Sign out from all devices</button><br><br>
+<a id="dashboardLink" href="/site/admin/dashboard.html" style="display:none;">Go to Admin Dashboard</a>
+
 </div>
 </div>
 

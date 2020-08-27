@@ -59,12 +59,14 @@ class Things:
                 continue
             path = path.replace('{%s}' % i, '<span class="param">{%s}</span>' % i)
         print('<div class="method-path{}" onclick="showOrHide(this)"><span \
-class="method">{}</span> <code>{}</code> <a href=\"#authorization\"><img \
+class="method">{}</span> <code>{}</code> <a href=\"#{}\"><img \
 src="https://image.flaticon.com/icons/png/512/61/61457.png" \
 title="Authorization necessary" /></a></div>'.format(
             " auth-needed" if 'auth' in thing else '',
             thing['method'],
-            path
+            path,
+            (thing['auth'] if thing['auth'] is not True
+             else 'authorization') if 'auth' in thing else 'authorization'
         ))
         print('<div style="display: none">')
         if has_param:
@@ -94,23 +96,34 @@ title="Authorization necessary" /></a></div>'.format(
         print('</table>')
         new_thing = {}
         new_thing['heading'] = 'Returns '
-        if thing['returns']:
-            name = thing['returns']['type']
-            if thing['returns']['type'].endswith('[]'):
+        def heading(obj):
+            name = obj.get('__type__', obj['type'])
+            heading = ''
+            if name.endswith('[]'):
                 name = name[:-2]
-                new_thing['heading'] += 'a list of <a href=\"#{}-object\">\
+                heading += 'a list of <a href=\"#{}-object\">\
 {}</a> objects'.format(name.lower(), name)
             else:
-                new_thing['heading'] += 'a <a href=\"#{}-object\">{}</a> \
-object'.format(
-                    name.lower(), name
-                )
-            del thing['returns']['type']
+                heading += 'a <a href=\"#{}-object\">{}</a> \
+object'.format(name.lower(), name)
+            if '__type__' in obj:
+                del obj['__type__']
+            else:
+                del obj['type']
+            return heading
+        if thing['returns']:
+            new_thing['heading'] += heading(thing['returns'])
             new_thing['text'] = json.dumps(thing['returns'], indent=2)
         else:
             new_thing['heading'] += 'nothing'
             new_thing['text'] = ''
         cls.headedpre(new_thing)
+        if 'body' in thing:
+            new_thing = {}
+            new_thing['heading'] = 'Request body: '
+            new_thing['heading'] += heading(thing['body'])
+            new_thing['text'] = json.dumps(thing['body'], indent=2)
+            cls.headedpre(new_thing)
         print('</div></div>')
 
     @classmethod

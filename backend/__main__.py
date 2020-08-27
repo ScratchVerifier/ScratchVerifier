@@ -12,5 +12,6 @@ with open('config.json') as f:
 Server(
     config['hook-secret'],
     config['discord-hook'],
+    config['admins'],
     config.get('name', None)
 ).run_sync(config['port'], len(sys.argv) > 1 and sys.argv[1] == '--debug')

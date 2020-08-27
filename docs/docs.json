@@ -34,7 +34,7 @@
       "title": "API Reference",
       "paragraphs": [
         "The ScratchVerifier API is a HTTP/REST API for all operations.",
-        "<b>API Base URL</b>: <a href=\"http://scratchverifier.ddns.net:8888\">http://scratchverifier.ddns.net:8888</a>"
+        "<b>API Base URL</b>: <a href=\"https://scratchverifier.ddns.net\">https://scratchverifier.ddns.net</a>"
       ]
     },
     {
@@ -72,14 +72,13 @@
       "http": {
         "200 OK": "returns <a href=\"#verification-object\">Verification</a> object",
         "400 Bad Request": "username is invalid by Scratch rules",
-        "401 Unauthorized": "missing/invalid <a href=\"#authorization\">authorization</a>",
-        "404 Not Found": "username 404ed on Scratch API"
+        "401 Unauthorized": "missing/invalid <a href=\"#authorization\">authorization</a>"
       },
       "auth": true,
       "returns": {
         "type": "Verification",
         "code": "EJAAFcffGJeFDCGdJB...",
-        "username": "ScratchUsername"
+        "username": "scratchusername"
       }
     },
     {
@@ -121,8 +120,7 @@
       "http": {
         "204 No Content": "invalidation successful",
         "400 Bad Request": "username is invalid by Scratch rules",
-        "401 Unauthorized": "missing/invalid <a href=\"#authorization\">authorization</a>",
-        "404 Not Found": "username 404ed on Scratch API"
+        "401 Unauthorized": "missing/invalid <a href=\"#authorization\">authorization</a>"
       },
       "auth": true,
       "returns": null
@@ -150,18 +148,18 @@
       "http": {
         "200 OK": "returns <a href=\"#verification-object\">Verification</a> object",
         "400 Bad Request": "username is invalid by Scratch rules",
-        "404 Not Found": "username 404ed on Scratch API"
+        "403 Forbidden": "this username is banned from registering"
       },
       "returns": {
         "type": "Verification",
         "code": "EJAAFcffGJeFDCGdJB...",
-        "username": "ScratchUsername"
+        "username": "scratchusername"
       }
     },
     {
       "type": "endpoint",
       "name": "Finish Logging In",
-      "desc": "Finish the process of logging in. Returns a <a href=\"#session-object\">Session</a> object on success.",
+      "desc": "Finish the process of logging in. If successful, response contains a <code>session</code> cookie that must be set for all endpoints listed after this one to work. Returns an <a href=\"#admin-object\">Admin</a> object on success.",
       "method": "POST",
       "path": "/users/{username}/finish-login",
       "params": {
@@ -172,14 +170,14 @@
         }
       },
       "http": {
-        "200 OK": "returns <a href=\"#session-object\">Session</a> object",
+        "200 OK": "returns <a href=\"#admin-object\">Admin</a> object",
         "400 Bad Request": "username is invalid by Scratch rules",
         "401 Unauthorized": "login failed",
         "404 Not Found": "username 404ed on Scratch API"
       },
       "returns": {
-        "type": "Session",
-        "session": 1234567890
+        "type": "Admin",
+        "admin": false
       }
     },
     {
@@ -193,20 +191,16 @@
           "type": "string",
           "desc": "The username to log out",
           "query": false
-        },
-        "session": {
-          "type": "integer",
-          "desc": "REQUIRED: Session ID returned by <a href=\"#finish-logging-in-endpoint\">Finish Logging In</a> endpoint",
-          "query": true
         }
       },
       "http": {
         "204 No Content": "successfully logged out",
         "400 Bad Request": "username is invalid by Scratch rules",
-        "401 Unauthorized": "<code>session</code> invalid or not specified",
+        "401 Unauthorized": "invalid or no <code>session</code> in cookies",
         "403 Forbidden": "username does not match session",
         "404 Not Found": "username 404ed on Scratch API"
       },
+      "auth": "finish-logging-in-endpoint",
       "returns": null
     },
     {
@@ -214,24 +208,19 @@
       "name": "Get Client Info",
       "desc": "Get your client ID, token, and username. Returns a <a href=\"#user-object\">User</a> object on success.",
       "method": "GET",
-      "path": "/session/{session ID}",
-      "params": {
-        "session ID": {
-          "type": "string",
-          "desc": "Session ID returned by <a href=\"#finish-logging-in-endpoint\">Finish Logging In</a> endpoint",
-          "query": false
-        }
-      },
+      "path": "/session",
+      "params": {},
       "http": {
         "200 OK": "returns <a href=\"#user-object\">User</a> object",
-        "401 Unauthorized": "<code>session ID</code> invalid or not specified",
+        "401 Unauthorized": "invalid or no <code>session</code> in cookies",
         "404 Not Found": "this user is not registered with the API yet"
       },
+      "auth": "finish-logging-in-endpoint",
       "returns": {
         "type": "User",
         "client_id": 10114764,
         "token": "dd9410f80ba0...",
-        "username": "ScratchUsername"
+        "username": "scratchusername"
       }
     },
     {
@@ -239,24 +228,19 @@
       "name": "Create Client",
       "desc": "If this user does not own a client yet, create and return one.",
       "method": "PUT",
-      "path": "/session/{session ID}",
-      "params": {
-        "session ID": {
-          "type": "string",
-          "desc": "Session ID returned by <a href=\"#finish-logging-in-endpoint\">Finish Logging In</a> endpoint",
-          "query": false
-        }
-      },
+      "path": "/session",
+      "params": {},
       "http": {
         "200 OK": "returns new <a href=\"#user-object\">User</a> object",
-        "401 Unauthorized": "<code>session ID</code> invalid or not specified",
+        "401 Unauthorized": "invalid or no <code>session</code> in cookies",
         "409 Conflict": "this user is already registered with the API"
       },
+      "auth": "finish-logging-in-endpoint",
       "returns": {
         "type": "User",
         "client_id": 10114764,
         "token": "dd9410f80ba0...",
-        "username": "ScratchUsername"
+        "username": "scratchusername"
       }
     },
     {
@@ -264,23 +248,18 @@
       "name": "Reset Token",
       "desc": "If you suspect that your token has been compromised, reset it through this endpoint.",
       "method": "PATCH",
-      "path": "/session/{session ID}",
-      "params": {
-        "session ID": {
-          "type": "string",
-          "desc": "Session ID returned by <a href=\"#finish-logging-in-endpoint\">Finish Logging In</a> endpoint",
-          "query": false
-        }
-      },
+      "path": "/session",
+      "params": {},
       "http": {
         "200 OK": "returns updated <a href=\"#user-object\">User</a> object",
-        "401 Unauthorized": "<code>session ID</code> invalid or not specified"
+        "401 Unauthorized": "invalid or no <code>session</code> in cookies"
       },
+      "auth": "finish-logging-in-endpoint",
       "returns": {
         "type": "User",
         "client_id": 10114764,
         "token": "dd9410f80ba0...",
-        "username": "ScratchUsername"
+        "username": "scratchusername"
       }
     },
     {
@@ -288,18 +267,13 @@
       "name": "Delete Client",
       "desc": "Deregister from the API. Returns 204 No Content on success.",
       "method": "DELETE",
-      "path": "/session/{session ID}",
-      "params": {
-        "session ID": {
-          "type": "string",
-          "desc": "Session ID returned by <a href=\"#finish-logging-in-endpoint\">Finish Logging In</a> endpoint",
-          "query": false
-        }
-      },
+      "path": "/session",
+      "params": {},
       "http": {
         "204 No Content": "client was successfully deleted",
-        "401 Unauthorized": "<code>session ID</code> invalid or not specified"
+        "401 Unauthorized": "invalid or no <code>session</code> in cookies"
       },
+      "auth": "finish-logging-in-endpoint",
       "returns": null
     },
     {
@@ -307,18 +281,13 @@
       "name": "Logout Session",
       "desc": "Invalidate this session ID.",
       "method": "POST",
-      "path": "/session/{session ID}/logout",
-      "params": {
-        "session ID": {
-          "type": "string",
-          "desc": "Session ID returned by <a href=\"#finish-logging-in-endpoint\">Finish Logging In</a> endpoint",
-          "query": false
-        }
-      },
+      "path": "/session/logout",
+      "params": {},
       "http": {
         "204 No Content": "successfully logged out",
-        "401 Unauthorized": "<code>session ID</code> invalid or not specified"
+        "401 Unauthorized": "invalid or no <code>session</code> in cookies"
       },
+      "auth": "finish-logging-in-endpoint",
       "returns": null
     },
     {
@@ -378,14 +347,14 @@
       },
       "http": {
         "200 OK": "returns list of <a href=\"#log-object\">Log</a> objects",
-        "400 Bad Request": "a query param was the wrong type",
+        "400 Bad Request": "<code>start</code> is after <code>end</code>, <code>before</code> is after <code>after</code>, <code>type</code> is invalid, or a query param was the wrong type",
         "403 Forbidden": "<code>limit</code> was greater than 500"
       },
       "returns": {
         "type": "Log[]",
         "log_id": 123,
         "client_id": 1234567890,
-        "username": "ScratchUsername",
+        "username": "scratchusername",
         "log_time": "1566974952",
         "log_type": 1
       }
@@ -411,16 +380,360 @@
         "type": "Log",
         "log_id": 123,
         "client_id": 1234567890,
-        "username": "ScratchUsername",
+        "username": "scratchusername",
         "log_time": "1566974952",
         "log_type": 1
       }
     },
     {
       "type": "section",
+      "heading": "Administrative Endpoints",
+      "paragraphs": [
+        "The following endpoints can only be accessed by administrators.",
+        "Administrators must be logged in with the <a href=\"#finish-logging-in-endpoint\">Finish Logging In endpoint</a> to access these endpoints."
+      ]
+    },
+    {
+      "type": "section",
+      "heading": "Ratelimit Endpoints",
+      "paragraphs": [
+        "These endpoints are to do with getting and setting ratelimits on the main API."
+      ]
+    },
+    {
+      "type": "endpoint",
+      "name": "Get All Ratelimits",
+      "desc": "Fetch all currently active ratelimits.",
+      "method": "GET",
+      "path": "/admin/ratelimits",
+      "params": {},
+      "http": {
+        "200 OK": "returns list of <a href=\"#ratelimit-object\">Ratelimit</a> objects",
+        "401 Unauthorized": "invalid or no <code>session</code> in cookies"
+      },
+      "auth": "administrative-endpoints",
+      "returns": {
+        "type": "Ratelimit[]",
+        "username": "scratchusername",
+        "ratelimit": 30
+      }
+    },
+    {
+      "type": "endpoint",
+      "name": "Get Single Ratelimit",
+      "desc": "Fetch ratelimits for a particular user.",
+      "method": "GET",
+      "path": "/admin/ratelimits/{username}",
+      "params": {
+        "username": {
+          "type": "string",
+          "desc": "Username to fetch ratelimits for",
+          "query": false
+        }
+      },
+      "http": {
+        "200 OK": "returns <a href=\"#ratelimit-object\">Ratelimit</a> object",
+        "400 Bad Request": "username invalid by Scratch standards",
+        "401 Unauthorized": "invalid or no <code>session</code> in cookies",
+        "404 Not Found": "no ratelimit set for that user"
+      },
+      "auth": "administrative-endpoints",
+      "returns": {
+        "type": "PartialRatelimit",
+        "ratelimit": 30
+      }
+    },
+    {
+      "type": "endpoint",
+      "name": "Modify Ratelimits",
+      "desc": "Modify or set ratelimits for multiple users at once. Only users specified will modified; the rest will not be touched. Invalid entries are ignored.",
+      "method": "PATCH",
+      "path": "/admin/ratelimits",
+      "params": {},
+      "http": {
+        "204 No Content": "success",
+        "401 Unauthorized": "invalid or no <code>session</code> in cookies"
+      },
+      "auth": "administrative-endpoints",
+      "returns": null,
+      "body": {
+        "type": "Ratelimit[]",
+        "username": "scratchusername",
+        "ratelimit": 30
+      }
+    },
+    {
+      "type": "endpoint",
+      "name": "Modify Single Ratelimit",
+      "desc": "Modify or set ratelimits for a specific user. Nonexistent users can be set preemptively.",
+      "method": "POST",
+      "path": "/admin/ratelimits/{username}",
+      "params": {
+        "username": {
+          "type": "string",
+          "desc": "Username to set ratelimits for",
+          "query": false
+        }
+      },
+      "http": {
+        "204 No Content": "success",
+        "400 Bad Request": "username invalid by Scratch standards",
+        "401 Unauthorized": "invalid or no <code>session</code> in cookies"
+      },
+      "auth": "administrative-endpoints",
+      "returns": null,
+      "body": {
+        "type": "Ratelimit",
+        "ratelimit": 30
+      }
+    },
+    {
+      "type": "section",
+      "heading": "Ban Endpoints",
+      "paragraphs": [
+        "These endpoints are to do with getting and setting bans on the registration API."
+      ]
+    },
+    {
+      "type": "endpoint",
+      "name": "Get All Bans",
+      "desc": "Fetch all currently active bans.",
+      "method": "GET",
+      "path": "/admin/bans",
+      "params": {},
+      "http": {
+        "200 OK": "returns list of <a href=\"#Ban-object\">Ban</a> objects",
+        "401 Unauthorized": "invalid or no <code>session</code> in cookies"
+      },
+      "auth": "administrative-endpoints",
+      "returns": {
+        "type": "Ban[]",
+        "username": "scratchusername",
+        "expiry": 1598537437
+      }
+    },
+    {
+      "type": "endpoint",
+      "name": "Get Single Ban",
+      "desc": "Fetch the active ban for a specific user, if any.",
+      "method": "GET",
+      "path": "/admin/bans/{username}",
+      "params": {
+        "username": {
+          "type": "string",
+          "desc": "Username to fetch ban for",
+          "query": false
+        }
+      },
+      "http": {
+        "200 OK": "returns <a href=\"#Ban-object\">Ban</a> object",
+        "400 Bad Request": "username invalid by Scratch standards",
+        "401 Unauthorized": "invalid or no <code>session</code> in cookies",
+        "404 Not Found": "no ban currently in force for that user"
+      },
+      "auth": "administrative-endpoints",
+      "returns": {
+        "type": "PartialBan",
+        "expiry": 1598537437
+      }
+    },
+    {
+      "type": "endpoint",
+      "name": "Modify Bans",
+      "desc": "Modify or put multiple bans into force. Invalid entries are ignored.",
+      "method": "PATCH",
+      "path": "/admin/bans",
+      "params": {},
+      "http": {
+        "204 No Content": "success",
+        "401 Unauthorized": "invalid or no <code>session</code> in cookies"
+      },
+      "auth": "administrative-endpoints",
+      "returns": null,
+      "body": {
+        "type": "Ban[]",
+        "username": "scratchusername",
+        "expiry": 1598537437
+      }
+    },
+    {
+      "type": "endpoint",
+      "name": "Modify Single Ban",
+      "desc": "Ban a user or modify their existing ban.",
+      "method": "GET",
+      "path": "/admin/bans/{username}",
+      "params": {
+        "username": {
+          "type": "string",
+          "desc": "Username to ban",
+          "query": false
+        }
+      },
+      "http": {
+        "204 No Content": "success",
+        "400 Bad Request": "username invalid by Scratch standards",
+        "401 Unauthorized": "invalid or no <code>session</code> in cookies"
+      },
+      "auth": "administrative-endpoints",
+      "returns": null,
+      "body": {
+        "type": "PartialBan",
+        "expiry": 1598537437
+      }
+    },
+    {
+      "type": "endpoint",
+      "name": "Unban",
+      "desc": "Unban a user. This is idempotent; unbanning the same user multiple times will unban them once (unless they are banned again).",
+      "method": "DELETE",
+      "path": "/admin/bans/{username}",
+      "params": {
+        "username": {
+          "type": "string",
+          "desc": "Username to unban",
+          "query": false
+        }
+      },
+      "http": {
+        "204 No Content": "success",
+        "400 Bad Request": "username invalid by Scratch standards",
+        "401 Unauthorized": "invalid or no <code>session</code> in cookies"
+      },
+      "auth": "administrative-endpoints",
+      "returns": null
+    },
+    {
+      "type": "section",
+      "heading": "Audit Log Endpoints",
+      "paragraphs": [
+        "Admins' actions are recorded. Fetch those logs with these endpoints."
+      ]
+    },
+    {
+      "type": "endpoint",
+      "name": "Get Audit Logs",
+      "desc": "Get logs of who has used this API to perform what admin action. These logs are accessible only by administrators.",
+      "method": "GET",
+      "path": "/admin/logs",
+      "params": {
+        "limit": {
+          "type": "integer",
+          "desc": "Return at most <code>limit</code> logs. This can be arbitrarily large, but defaults to 100 and cannot be unlimited.",
+          "query": true
+        },
+        "start": {
+          "type": "integer",
+          "desc": "Return logs that happened before (not including) the log with ID <code>start</code>. Usually used for getting the next page of logs. This does not have to be a valid ID (though it usually is)",
+          "query": true
+        },
+        "before": {
+          "type": "integer",
+          "desc": "Return logs that happened before (and including) the Unix epoch time <code>before</code>",
+          "query": true
+        },
+        "end": {
+          "type": "integer",
+          "desc": "Return logs that happened after (not including) the log with ID <code>end</code>",
+          "query": true
+        },
+        "after": {
+          "type": "integer",
+          "desc": "Return logs that happened after (and including) the Unix epoch time <code>after</code>. Usually used to limit returned logs by time",
+          "query": true
+        },
+        "username": {
+          "type": "string",
+          "desc": "Only return logs with the username <code>username</code>",
+          "query": true
+        },
+        "type": {
+          "type": "integer",
+          "desc": "Only return logs with the <a href=\"#audit-log-types\">audit log type</a> <code>type</code>",
+          "query": true
+        }
+      },
+      "http": {
+        "200 OK": "returns list of <a href=\"#auditlog-object\">AuditLog</a> objects",
+        "400 Bad Request": "<code>start</code> is after <code>end</code>, <code>before</code> is after <code>after</code>, <code>type</code> is invalid, or a query param was the wrong type",
+        "401 Unauthorized": "invalid or no <code>session</code> in cookies"
+      },
+      "auth": "administrative-endpoints",
+      "returns": {
+        "__type__": "AuditLog[]",
+        "id": 123,
+        "username": "actionperformer",
+        "time": "1566974952",
+        "type": 1,
+        "data": "{\"username\": \"ScratchUsername\", \"expiry\": 1234567890}"
+      }
+    },
+    {
+      "type": "endpoint",
+      "name": "Get Audit Log",
+      "desc": "Fetch the information for a single audit log entry.",
+      "method": "GET",
+      "path": "/admin/logs/{log ID}",
+      "params": {
+        "log ID": {
+          "type": "integer",
+          "desc": "ID of audit log entry to fetch",
+          "query": false
+        }
+      },
+      "http": {
+        "200 OK": "returns single <a href=\"#auditlog-object\">Log</a> object",
+        "401 Unauthorized": "invalid or no <code>session</code> in cookies",
+        "404 Not Found": "no log with such ID"
+      },
+      "auth": "administrative-endpoints",
+      "returns": {
+        "__type__": "AuditLog",
+        "id": 123,
+        "username": "actionperformer",
+        "time": "1566974952",
+        "type": 1,
+        "data": "{\"username\": \"ScratchUsername\", \"expiry\": 1234567890}"
+      }
+    },
+    {
+      "type": "section",
+      "heading": "Miscellaneous Admin Tools",
+      "paragraphs": [
+        "Admins have a few other tools available as well."
+      ]
+    },
+    {
+      "type": "endpoint",
+      "name": "Get Client Info",
+      "desc": "Fetch information about a certain client. The token is partially censored.",
+      "method": "GET",
+      "path": "/admin/client/{client ID}",
+      "params": {
+        "client ID": {
+          "type": "integer",
+          "desc": "ID of client whose info is to be fetched",
+          "query": false
+        }
+      },
+      "http": {
+        "200 OK": "returns <a href=\"#client-object\">Client</a> object",
+        "401 Unauthorized": "invalid or no <code>session</code> in cookies",
+        "404 Not Found": "no client with that ID"
+      },
+      "auth": "administrative-endpoints",
+      "returns": {
+        "type": "Client",
+        "client_id": 1234567890,
+        "token": "EaFfBJdC******...",
+        "username": "scratchusername",
+        "ratelimit": 30
+      }
+    },
+    {
+      "type": "section",
       "heading": "Objects",
       "paragraphs": [
-        "Various endpoints have defined return types. They are documented below."
+        "Various endpoints have defined return types or body structures. They are documented below."
       ]
     },
     {
@@ -434,10 +747,10 @@
     },
     {
       "type": "object",
-      "name": "Session",
-      "desc": "Holds the session ID to use in other API registration endpoints.",
+      "name": "Admin",
+      "desc": "Indicates whether the user who just <a href=\"#finish-logging-in-endpoint\">finished logging in</a> is an admin on the site or not.",
       "fields": {
-        "session": {"type": "integer", "desc": "session ID to use"}
+        "admin": {"type": "boolean", "desc": "whether the user is an admin"}
       }
     },
     {
@@ -463,6 +776,63 @@
       }
     },
     {
+      "type": "object",
+      "name": "Ratelimit",
+      "desc": "Holds data about a user's ratelimit.",
+      "fields": {
+        "username": {"type": "string", "desc": "username being ratelimited"},
+        "ratelimit": {"type": "integer", "desc": "how many requests they can make per minute"}
+      }
+    },
+    {
+      "type": "object",
+      "name": "PartialRatelimit",
+      "desc": "Holds data about a user's ratelimit, without their name",
+      "fields": {
+        "ratelimit": {"type": "integer", "desc": "how many requests they can make per minute"}
+      }
+    },
+    {
+      "type": "object",
+      "name": "Ban",
+      "desc": "Holds data about a user's ban status.",
+      "fields": {
+        "username": {"type": "string", "desc": "username being banned"},
+        "expiry": {"type": "integer?", "desc": "Unix timestamp when their ban expires. <code>null</code> means a permanent ban."}
+      }
+    },
+    {
+      "type": "object",
+      "name": "PartialBan",
+      "desc": "Holds data about a user's ban status, without their name.",
+      "fields": {
+        "expiry": {"type": "integer?", "desc": "Unix epoch time when their ban expires. <code>null</code> means a permanent ban."}
+      }
+    },
+    {
+      "type": "object",
+      "name": "AuditLog",
+      "desc": "Holds log data for an admin action.",
+      "fields": {
+        "id": {"type": "integer", "desc": "log ID"},
+        "username": {"type": "string", "desc": "username of action performer"},
+        "time": {"type": "integer", "desc": "Unix epoch time of log"},
+        "type": {"type": "integer", "desc": "<a href=\"#audit-log-types\">audit log type</a>"},
+        "data": {"type": "string", "desc": "stringified JSON of action data"}
+      }
+    },
+    {
+      "type": "object",
+      "name": "Client",
+      "desc": "Holds data about a client.",
+      "fields": {
+        "client_id": {"type": "integer", "desc": "client ID"},
+        "token": {"type": "string", "desc": "partially censored token of client"},
+        "username": {"type": "string", "desc": "username of owner"},
+        "ratelimit": {"type": "integer?", "desc": "how many requests this client can make per minute. Can be <code>null</code> if this client has never been used yet."}
+      }
+    },
+    {
       "type": "section",
       "heading": "Log Types",
       "paragraphs": [
@@ -472,6 +842,18 @@
           "<code>2</code>: verification succeeded",
           "<code>3</code>: verification failed",
           "<code>4</code>: verification invalidated"
+        ]}
+      ]
+    },
+    {
+      "type": "section",
+      "heading": "Audit Log Types",
+      "paragraphs": [
+        "Audit logs can have three types:",
+        {"type": "ul", "items": [
+          "<code>1</code>: user banned or user ban modified",
+          "<code>2</code>: user ratelimit modified",
+          "<code>3</code>: user unbanned"
         ]}
       ]
     }
@@ -486,7 +868,7 @@
       "type": "section",
       "heading": "Basic Walkthrough",
       "paragraphs": [
-        "The API root URL is <a href=\"http://scratchverifier.ddns.net:8888\">http://scratchverifier.ddns.net:8888</a>",
+        "The API root URL is <a href=\"https://scratchverifier.ddns.net\">https://scratchverifier.ddns.net</a>",
         "After <a href=\"registration.html\"><b>registering</b></a>, here's how to use this API:",
         {"type": "ol", "items": [
           "Send an HTTP <span class=\"method\">PUT</span> request to <code>/verify/<span class=\"param\">{username}</span></code> with the client ID and token you obtained as HTTP Basic authorization",
@@ -508,7 +890,7 @@
       "type": "section",
       "heading": "Registering Through the Website",
       "paragraphs": [
-        "This is how to register with this API through the <a href=\"http://scratchverifier.ddns.net:8888/site/\">website</a>.",
+        "This is how to register with this API through the <a href=\"https://scratchverifier.ddns.net/site/\">website</a>.",
         {"type": "ol", "items": [
           "Visit the website.",
           "Click \"Login/Register\" at the top right",
@@ -533,12 +915,12 @@
           "The API will send you a <a href=\"reference.html#verification-object\">Verification</a> object containing a code",
           "Post this code on your own profile comments",
           "Send an HTTP <span class=\"method\">POST</span> request to <code>/users/<span class=\"param\">{yourusername}</span>/finish-login</code>",
-          "You will receive a <a href=\"reference.html#session-object\">Session</a> object containing a single integer. This is your session ID; it lasts for a year",
-          "Assuming you haven't already created a client, send an HTTP <span class=\"method\">PUT</span> request to <code>/session/<span class=\"param\">{session}</span></code>",
+          "You will receive a cookie with your session ID. Set it; it lasts a year",
+          "Assuming you haven't already created a client, send an HTTP <span class=\"method\">PUT</span> request to <code>/session</code>",
           "You will receive a <a href=\"reference.html#user-object\">User</a> object containing your client ID and token",
           "Put your client ID and token into your app's configuration. Done!"
         ]},
-        "At any point, if it becomes necessary to fetch your info again, simply send an HTTP <span class=\"method\">GET</span> request to <code>/session/<span class=\"param\">{session}</span></code> and you will receive it. If you receive a 401 Unauthorized response, you need to get another session ID by following steps 1-5."
+        "At any point, if it becomes necessary to fetch your info again, simply send an HTTP <span class=\"method\">GET</span> request to <code>/session</code> and you will receive it. If you receive a 401 Unauthorized response, you need to get another session ID by following steps 1-5."
       ]
     },
     {
@@ -559,14 +941,14 @@
         ]},
         "Or using the API:",
         {"type": "ol", "items": [
-          "<span class=\"method\">GET</span> <code>/session/<span class=\"param\">{session}</span></code> to fetch your info",
+          "<span class=\"method\">GET</span> <code>/session</code> to fetch your info",
           "If you receive your info, skip to step 8. Otherwise, continue with step 3",
           "Send an HTTP <span class=\"method\">POST</span> request to <code>/users/<span class=\"param\">{yourusername}</span>/login</code>",
           "The API will send you a <a href=\"reference.html#verification-object\">Verification</a> object containing a code",
           "Post this code on your own profile comments",
           "Send an HTTP <span class=\"method\">POST</span> request to <code>/users/<span class=\"param\">{yourusername}</span>/finish-login</code>",
-          "You will receive a <a href=\"reference.html#session-object\">Session</a> object containing a single integer. This is your session ID; it lasts for a year",
-          "Send an HTTP <span class=\"method\">PATCH</span> request to <code>/session/<span class=\"param\">{session}</span></code>",
+          "You will receive a cookie with your session ID. Set it; it lasts a year",
+          "Send an HTTP <span class=\"method\">PATCH</span> request to <code>/session</code>",
           "You will receive a new <a href=\"reference.html#user-object\">User</a> object containing your client ID and updated token",
           "Update your token in your app's configuration. Done!"
         ]}
@@ -590,14 +972,14 @@
         ]},
         "Or using the API:",
         {"type": "ol", "items": [
-          "<span class=\"method\">GET</span> <code>/session/<span class=\"param\">{session}</span></code> to fetch your info",
+          "<span class=\"method\">GET</span> <code>/session</code> to fetch your info",
           "If you receive your info, skip to step 8. Otherwise, continue with step 3",
           "Send an HTTP <span class=\"method\">POST</span> request to <code>/users/<span class=\"param\">{yourusername}</span>/login</code>",
           "The API will send you a <a href=\"reference.html#verification-object\">Verification</a> object containing a code",
           "Post this code on your own profile comments",
           "Send an HTTP <span class=\"method\">POST</span> request to <code>/users/<span class=\"param\">{yourusername}</span>/finish-login</code>",
-          "You will receive a <a href=\"reference.html#session-object\">Session</a> object containing a single integer. This is your session ID; it lasts for a year",
-          "Send an HTTP <span class=\"method\">DELETE</span> request to <code>/session/<span class=\"param\">{session}</span></code>",
+          "You will receive a cookie with your session ID. Set it; it lasts a year",
+          "Send an HTTP <span class=\"method\">DELETE</span> request to <code>/session</code>",
           "You will receive a 204 No Content response. :("
         ]},
         "<i>Note: This only deregisters your client from the API. You are still free to re-register later. Resetting your token is almost like deregistering and re-registering again.</i>"
