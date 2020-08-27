@@ -59,12 +59,14 @@ class Things:
                 continue
             path = path.replace('{%s}' % i, '<span class="param">{%s}</span>' % i)
         print('<div class="method-path{}" onclick="showOrHide(this)"><span \
-class="method">{}</span> <code>{}</code> <a href=\"#authorization\"><img \
+class="method">{}</span> <code>{}</code> <a href=\"#{}\"><img \
 src="https://image.flaticon.com/icons/png/512/61/61457.png" \
 title="Authorization necessary" /></a></div>'.format(
             " auth-needed" if 'auth' in thing else '',
             thing['method'],
-            path
+            path,
+            (thing['auth'] if thing['auth'] is not True
+             else 'authorization') if 'auth' in thing else 'authorization'
         ))
         print('<div style="display: none">')
         if has_param:
@@ -95,8 +97,8 @@ title="Authorization necessary" /></a></div>'.format(
         new_thing = {}
         new_thing['heading'] = 'Returns '
         if thing['returns']:
-            name = thing['returns']['type']
-            if thing['returns']['type'].endswith('[]'):
+            name = thing['returns'].get('__type__', thing['returns']['type'])
+            if name.endswith('[]'):
                 name = name[:-2]
                 new_thing['heading'] += 'a list of <a href=\"#{}-object\">\
 {}</a> objects'.format(name.lower(), name)
@@ -105,7 +107,10 @@ title="Authorization necessary" /></a></div>'.format(
 object'.format(
                     name.lower(), name
                 )
-            del thing['returns']['type']
+            if '__type__' in thing['returns']:
+                del thing['returns']['__type__']
+            else:
+                del thing['returns']['type']
             new_thing['text'] = json.dumps(thing['returns'], indent=2)
         else:
             new_thing['heading'] += 'nothing'

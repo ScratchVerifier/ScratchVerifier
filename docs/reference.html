@@ -99,7 +99,7 @@
 <tr><th>Status</th><th>Meaning</th>
 <tr><td>200 OK</td><td>returns <a href="#verification-object">Verification</a> object</td></tr>
 <tr><td>400 Bad Request</td><td>username is invalid by Scratch rules</td></tr>
-<tr><td>404 Not Found</td><td>username 404ed on Scratch API</td></tr>
+<tr><td>403 Forbidden</td><td>this username is banned from registering</td></tr>
 </table>
 <table><caption>Returns a <a href="#verification-object">Verification</a> object</caption>
 <tr><td class="pre">{
@@ -109,7 +109,7 @@
 </table>
 </div></div>
 <h3 id="finish-logging-in-endpoint">Finish Logging In Endpoint</h3>
-<p>Finish the process of logging in. Returns a <a href="#session-object">Session</a> object on success.</p>
+<p>Finish the process of logging in. If successful, response contains a <code>session</code> cookie that must be set for all endpoints listed after this one to work. Returns an <a href="#admin-object">Admin</a> object on success.</p>
 <div class="endpoint">
 <div class="method-path" onclick="showOrHide(this)"><span class="method">POST</span> <code>/users/<span class="param">{username}</span>/finish-login</code> <a href="#authorization"><img src="https://image.flaticon.com/icons/png/512/61/61457.png" title="Authorization necessary" /></a></div>
 <div style="display: none">
@@ -119,35 +119,31 @@
 </table>
 <table><caption>HTTP statuses</caption>
 <tr><th>Status</th><th>Meaning</th>
-<tr><td>200 OK</td><td>returns <a href="#session-object">Session</a> object</td></tr>
+<tr><td>200 OK</td><td>returns <a href="#admin-object">Admin</a> object</td></tr>
 <tr><td>400 Bad Request</td><td>username is invalid by Scratch rules</td></tr>
 <tr><td>401 Unauthorized</td><td>login failed</td></tr>
 <tr><td>404 Not Found</td><td>username 404ed on Scratch API</td></tr>
 </table>
-<table><caption>Returns a <a href="#session-object">Session</a> object</caption>
+<table><caption>Returns a <a href="#admin-object">Admin</a> object</caption>
 <tr><td class="pre">{
-  "session": 1234567890
+  "admin": false
 }</td></tr>
 </table>
 </div></div>
 <h3 id="logout-all-sessions-endpoint">Logout All Sessions Endpoint</h3>
 <p>Immediately invalidate all sessions under this username.</p>
 <div class="endpoint">
-<div class="method-path" onclick="showOrHide(this)"><span class="method">POST</span> <code>/users/<span class="param">{username}</span>/logout</code> <a href="#authorization"><img src="https://image.flaticon.com/icons/png/512/61/61457.png" title="Authorization necessary" /></a></div>
+<div class="method-path auth-needed" onclick="showOrHide(this)"><span class="method">POST</span> <code>/users/<span class="param">{username}</span>/logout</code> <a href="#finish-logging-in-endpoint"><img src="https://image.flaticon.com/icons/png/512/61/61457.png" title="Authorization necessary" /></a></div>
 <div style="display: none">
 <table><caption>URL Params</caption>
 <tr><th>Field</th><th>Type</th><th>Description</th>
 <tr><td>username</td><td>string</td><td>The username to log out</td></tr>
 </table>
-<table><caption>Query String Params</caption>
-<tr><th>Field</th><th>Type</th><th>Description</th>
-<tr><td>session</td><td>integer</td><td>REQUIRED: Session ID returned by <a href="#finish-logging-in-endpoint">Finish Logging In</a> endpoint</td></tr>
-</table>
 <table><caption>HTTP statuses</caption>
 <tr><th>Status</th><th>Meaning</th>
 <tr><td>204 No Content</td><td>successfully logged out</td></tr>
 <tr><td>400 Bad Request</td><td>username is invalid by Scratch rules</td></tr>
-<tr><td>401 Unauthorized</td><td><code>session</code> invalid or not specified</td></tr>
+<tr><td>401 Unauthorized</td><td>invalid or no <code>session</code> in cookies</td></tr>
 <tr><td>403 Forbidden</td><td>username does not match session</td></tr>
 <tr><td>404 Not Found</td><td>username 404ed on Scratch API</td></tr>
 </table>
@@ -158,16 +154,12 @@
 <h3 id="get-client-info-endpoint">Get Client Info Endpoint</h3>
 <p>Get your client ID, token, and username. Returns a <a href="#user-object">User</a> object on success.</p>
 <div class="endpoint">
-<div class="method-path" onclick="showOrHide(this)"><span class="method">GET</span> <code>/session/<span class="param">{session ID}</span></code> <a href="#authorization"><img src="https://image.flaticon.com/icons/png/512/61/61457.png" title="Authorization necessary" /></a></div>
+<div class="method-path auth-needed" onclick="showOrHide(this)"><span class="method">GET</span> <code>/session</code> <a href="#finish-logging-in-endpoint"><img src="https://image.flaticon.com/icons/png/512/61/61457.png" title="Authorization necessary" /></a></div>
 <div style="display: none">
-<table><caption>URL Params</caption>
-<tr><th>Field</th><th>Type</th><th>Description</th>
-<tr><td>session ID</td><td>string</td><td>Session ID returned by <a href="#finish-logging-in-endpoint">Finish Logging In</a> endpoint</td></tr>
-</table>
 <table><caption>HTTP statuses</caption>
 <tr><th>Status</th><th>Meaning</th>
 <tr><td>200 OK</td><td>returns <a href="#user-object">User</a> object</td></tr>
-<tr><td>401 Unauthorized</td><td><code>session ID</code> invalid or not specified</td></tr>
+<tr><td>401 Unauthorized</td><td>invalid or no <code>session</code> in cookies</td></tr>
 <tr><td>404 Not Found</td><td>this user is not registered with the API yet</td></tr>
 </table>
 <table><caption>Returns a <a href="#user-object">User</a> object</caption>
@@ -181,16 +173,12 @@
 <h3 id="create-client-endpoint">Create Client Endpoint</h3>
 <p>If this user does not own a client yet, create and return one.</p>
 <div class="endpoint">
-<div class="method-path" onclick="showOrHide(this)"><span class="method">PUT</span> <code>/session/<span class="param">{session ID}</span></code> <a href="#authorization"><img src="https://image.flaticon.com/icons/png/512/61/61457.png" title="Authorization necessary" /></a></div>
+<div class="method-path auth-needed" onclick="showOrHide(this)"><span class="method">PUT</span> <code>/session</code> <a href="#finish-logging-in-endpoint"><img src="https://image.flaticon.com/icons/png/512/61/61457.png" title="Authorization necessary" /></a></div>
 <div style="display: none">
-<table><caption>URL Params</caption>
-<tr><th>Field</th><th>Type</th><th>Description</th>
-<tr><td>session ID</td><td>string</td><td>Session ID returned by <a href="#finish-logging-in-endpoint">Finish Logging In</a> endpoint</td></tr>
-</table>
 <table><caption>HTTP statuses</caption>
 <tr><th>Status</th><th>Meaning</th>
 <tr><td>200 OK</td><td>returns new <a href="#user-object">User</a> object</td></tr>
-<tr><td>401 Unauthorized</td><td><code>session ID</code> invalid or not specified</td></tr>
+<tr><td>401 Unauthorized</td><td>invalid or no <code>session</code> in cookies</td></tr>
 <tr><td>409 Conflict</td><td>this user is already registered with the API</td></tr>
 </table>
 <table><caption>Returns a <a href="#user-object">User</a> object</caption>
@@ -204,16 +192,12 @@
 <h3 id="reset-token-endpoint">Reset Token Endpoint</h3>
 <p>If you suspect that your token has been compromised, reset it through this endpoint.</p>
 <div class="endpoint">
-<div class="method-path" onclick="showOrHide(this)"><span class="method">PATCH</span> <code>/session/<span class="param">{session ID}</span></code> <a href="#authorization"><img src="https://image.flaticon.com/icons/png/512/61/61457.png" title="Authorization necessary" /></a></div>
+<div class="method-path auth-needed" onclick="showOrHide(this)"><span class="method">PATCH</span> <code>/session</code> <a href="#finish-logging-in-endpoint"><img src="https://image.flaticon.com/icons/png/512/61/61457.png" title="Authorization necessary" /></a></div>
 <div style="display: none">
-<table><caption>URL Params</caption>
-<tr><th>Field</th><th>Type</th><th>Description</th>
-<tr><td>session ID</td><td>string</td><td>Session ID returned by <a href="#finish-logging-in-endpoint">Finish Logging In</a> endpoint</td></tr>
-</table>
 <table><caption>HTTP statuses</caption>
 <tr><th>Status</th><th>Meaning</th>
 <tr><td>200 OK</td><td>returns updated <a href="#user-object">User</a> object</td></tr>
-<tr><td>401 Unauthorized</td><td><code>session ID</code> invalid or not specified</td></tr>
+<tr><td>401 Unauthorized</td><td>invalid or no <code>session</code> in cookies</td></tr>
 </table>
 <table><caption>Returns a <a href="#user-object">User</a> object</caption>
 <tr><td class="pre">{
@@ -226,16 +210,12 @@
 <h3 id="delete-client-endpoint">Delete Client Endpoint</h3>
 <p>Deregister from the API. Returns 204 No Content on success.</p>
 <div class="endpoint">
-<div class="method-path" onclick="showOrHide(this)"><span class="method">DELETE</span> <code>/session/<span class="param">{session ID}</span></code> <a href="#authorization"><img src="https://image.flaticon.com/icons/png/512/61/61457.png" title="Authorization necessary" /></a></div>
+<div class="method-path auth-needed" onclick="showOrHide(this)"><span class="method">DELETE</span> <code>/session</code> <a href="#finish-logging-in-endpoint"><img src="https://image.flaticon.com/icons/png/512/61/61457.png" title="Authorization necessary" /></a></div>
 <div style="display: none">
-<table><caption>URL Params</caption>
-<tr><th>Field</th><th>Type</th><th>Description</th>
-<tr><td>session ID</td><td>string</td><td>Session ID returned by <a href="#finish-logging-in-endpoint">Finish Logging In</a> endpoint</td></tr>
-</table>
 <table><caption>HTTP statuses</caption>
 <tr><th>Status</th><th>Meaning</th>
 <tr><td>204 No Content</td><td>client was successfully deleted</td></tr>
-<tr><td>401 Unauthorized</td><td><code>session ID</code> invalid or not specified</td></tr>
+<tr><td>401 Unauthorized</td><td>invalid or no <code>session</code> in cookies</td></tr>
 </table>
 <table><caption>Returns nothing</caption>
 <tr><td class="pre"></td></tr>
@@ -244,16 +224,12 @@
 <h3 id="logout-session-endpoint">Logout Session Endpoint</h3>
 <p>Invalidate this session ID.</p>
 <div class="endpoint">
-<div class="method-path" onclick="showOrHide(this)"><span class="method">POST</span> <code>/session/<span class="param">{session ID}</span>/logout</code> <a href="#authorization"><img src="https://image.flaticon.com/icons/png/512/61/61457.png" title="Authorization necessary" /></a></div>
+<div class="method-path auth-needed" onclick="showOrHide(this)"><span class="method">POST</span> <code>/session/logout</code> <a href="#finish-logging-in-endpoint"><img src="https://image.flaticon.com/icons/png/512/61/61457.png" title="Authorization necessary" /></a></div>
 <div style="display: none">
-<table><caption>URL Params</caption>
-<tr><th>Field</th><th>Type</th><th>Description</th>
-<tr><td>session ID</td><td>string</td><td>Session ID returned by <a href="#finish-logging-in-endpoint">Finish Logging In</a> endpoint</td></tr>
-</table>
 <table><caption>HTTP statuses</caption>
 <tr><th>Status</th><th>Meaning</th>
 <tr><td>204 No Content</td><td>successfully logged out</td></tr>
-<tr><td>401 Unauthorized</td><td><code>session ID</code> invalid or not specified</td></tr>
+<tr><td>401 Unauthorized</td><td>invalid or no <code>session</code> in cookies</td></tr>
 </table>
 <table><caption>Returns nothing</caption>
 <tr><td class="pre"></td></tr>
@@ -283,7 +259,7 @@
 <table><caption>HTTP statuses</caption>
 <tr><th>Status</th><th>Meaning</th>
 <tr><td>200 OK</td><td>returns list of <a href="#log-object">Log</a> objects</td></tr>
-<tr><td>400 Bad Request</td><td>a query param was the wrong type</td></tr>
+<tr><td>400 Bad Request</td><td><code>start</code> is after <code>end</code>, <code>before</code> is after <code>after</code>, <code>type</code> is invalid, or a query param was the wrong type</td></tr>
 <tr><td>403 Forbidden</td><td><code>limit</code> was greater than 500</td></tr>
 </table>
 <table><caption>Returns a list of <a href="#log-object">Log</a> objects</caption>
@@ -330,12 +306,12 @@
 <tr><td>code</td><td>string</td><td>verification code to post</td></tr>
 <tr><td>username</td><td>string</td><td>username being verified</td></tr>
 </table>
-<h3 id="session-object">Session Object</h3>
-<p>Holds the session ID to use in other API registration endpoints.</p>
-<table><caption>Session Structure</caption>
+<h3 id="admin-object">Admin Object</h3>
+<p>Indicates whether the user who just <a href="#finish-logging-in-endpoint">finished logging in</a> is an admin on the site or not.</p>
+<table><caption>Admin Structure</caption>
 <tr><th>Field</th><th>Type</th><th>Description</th></tr>
 
-<tr><td>session</td><td>integer</td><td>session ID to use</td></tr>
+<tr><td>admin</td><td>boolean</td><td>whether the user is an admin</td></tr>
 </table>
 <h3 id="user-object">User Object</h3>
 <p>Holds data that a client needs to access the API.</p>
@@ -462,7 +438,7 @@
 </ul>
 </li>
 <li>
-<div><a href="#session-object">Session&nbsp;Object</a>
+<div><a href="#admin-object">Admin&nbsp;Object</a>
 <ul>
 </ul>
 </li>
