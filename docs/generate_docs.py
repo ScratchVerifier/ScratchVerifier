@@ -96,26 +96,34 @@ title="Authorization necessary" /></a></div>'.format(
         print('</table>')
         new_thing = {}
         new_thing['heading'] = 'Returns '
-        if thing['returns']:
-            name = thing['returns'].get('__type__', thing['returns']['type'])
+        def heading(obj):
+            name = obj.get('__type__', obj['type'])
+            heading = ''
             if name.endswith('[]'):
                 name = name[:-2]
-                new_thing['heading'] += 'a list of <a href=\"#{}-object\">\
+                heading += 'a list of <a href=\"#{}-object\">\
 {}</a> objects'.format(name.lower(), name)
             else:
-                new_thing['heading'] += 'a <a href=\"#{}-object\">{}</a> \
-object'.format(
-                    name.lower(), name
-                )
-            if '__type__' in thing['returns']:
-                del thing['returns']['__type__']
+                heading += 'a <a href=\"#{}-object\">{}</a> \
+object'.format(name.lower(), name)
+            if '__type__' in obj:
+                del obj['__type__']
             else:
-                del thing['returns']['type']
+                del obj['type']
+            return heading
+        if thing['returns']:
+            new_thing['heading'] += heading(thing['returns'])
             new_thing['text'] = json.dumps(thing['returns'], indent=2)
         else:
             new_thing['heading'] += 'nothing'
             new_thing['text'] = ''
         cls.headedpre(new_thing)
+        if 'body' in thing:
+            new_thing = {}
+            new_thing['heading'] = 'Request body: '
+            new_thing['heading'] += heading(thing['body'])
+            new_thing['text'] = json.dumps(thing['body'], indent=2)
+            cls.headedpre(new_thing)
         print('</div></div>')
 
     @classmethod

@@ -78,7 +78,7 @@
       "returns": {
         "type": "Verification",
         "code": "EJAAFcffGJeFDCGdJB...",
-        "username": "ScratchUsername"
+        "username": "scratchusername"
       }
     },
     {
@@ -153,7 +153,7 @@
       "returns": {
         "type": "Verification",
         "code": "EJAAFcffGJeFDCGdJB...",
-        "username": "ScratchUsername"
+        "username": "scratchusername"
       }
     },
     {
@@ -220,7 +220,7 @@
         "type": "User",
         "client_id": 10114764,
         "token": "dd9410f80ba0...",
-        "username": "ScratchUsername"
+        "username": "scratchusername"
       }
     },
     {
@@ -240,7 +240,7 @@
         "type": "User",
         "client_id": 10114764,
         "token": "dd9410f80ba0...",
-        "username": "ScratchUsername"
+        "username": "scratchusername"
       }
     },
     {
@@ -259,7 +259,7 @@
         "type": "User",
         "client_id": 10114764,
         "token": "dd9410f80ba0...",
-        "username": "ScratchUsername"
+        "username": "scratchusername"
       }
     },
     {
@@ -354,7 +354,7 @@
         "type": "Log[]",
         "log_id": 123,
         "client_id": 1234567890,
-        "username": "ScratchUsername",
+        "username": "scratchusername",
         "log_time": "1566974952",
         "log_type": 1
       }
@@ -380,16 +380,360 @@
         "type": "Log",
         "log_id": 123,
         "client_id": 1234567890,
-        "username": "ScratchUsername",
+        "username": "scratchusername",
         "log_time": "1566974952",
         "log_type": 1
       }
     },
     {
       "type": "section",
+      "heading": "Administrative Endpoints",
+      "paragraphs": [
+        "The following endpoints can only be accessed by administrators.",
+        "Administrators must be logged in with the <a href=\"#finish-logging-in-endpoint\">Finish Logging In endpoint</a> to access these endpoints."
+      ]
+    },
+    {
+      "type": "section",
+      "heading": "Ratelimit Endpoints",
+      "paragraphs": [
+        "These endpoints are to do with getting and setting ratelimits on the main API."
+      ]
+    },
+    {
+      "type": "endpoint",
+      "name": "Get All Ratelimits",
+      "desc": "Fetch all currently active ratelimits.",
+      "method": "GET",
+      "path": "/admin/ratelimits",
+      "params": {},
+      "http": {
+        "200 OK": "returns list of <a href=\"#ratelimit-object\">Ratelimit</a> objects",
+        "401 Unauthorized": "invalid or no <code>session</code> in cookies"
+      },
+      "auth": "administrative-endpoints",
+      "returns": {
+        "type": "Ratelimit[]",
+        "username": "scratchusername",
+        "ratelimit": 30
+      }
+    },
+    {
+      "type": "endpoint",
+      "name": "Get Single Ratelimit",
+      "desc": "Fetch ratelimits for a particular user.",
+      "method": "GET",
+      "path": "/admin/ratelimits/{username}",
+      "params": {
+        "username": {
+          "type": "string",
+          "desc": "Username to fetch ratelimits for",
+          "query": false
+        }
+      },
+      "http": {
+        "200 OK": "returns <a href=\"#ratelimit-object\">Ratelimit</a> object",
+        "400 Bad Request": "username invalid by Scratch standards",
+        "401 Unauthorized": "invalid or no <code>session</code> in cookies",
+        "404 Not Found": "no ratelimit set for that user"
+      },
+      "auth": "administrative-endpoints",
+      "returns": {
+        "type": "PartialRatelimit",
+        "ratelimit": 30
+      }
+    },
+    {
+      "type": "endpoint",
+      "name": "Modify Ratelimits",
+      "desc": "Modify or set ratelimits for multiple users at once. Only users specified will modified; the rest will not be touched. Invalid entries are ignored.",
+      "method": "PATCH",
+      "path": "/admin/ratelimits",
+      "params": {},
+      "http": {
+        "204 No Content": "success",
+        "401 Unauthorized": "invalid or no <code>session</code> in cookies"
+      },
+      "auth": "administrative-endpoints",
+      "returns": null,
+      "body": {
+        "type": "Ratelimit[]",
+        "username": "scratchusername",
+        "ratelimit": 30
+      }
+    },
+    {
+      "type": "endpoint",
+      "name": "Modify Single Ratelimit",
+      "desc": "Modify or set ratelimits for a specific user. Nonexistent users can be set preemptively.",
+      "method": "POST",
+      "path": "/admin/ratelimits/{username}",
+      "params": {
+        "username": {
+          "type": "string",
+          "desc": "Username to set ratelimits for",
+          "query": false
+        }
+      },
+      "http": {
+        "204 No Content": "success",
+        "400 Bad Request": "username invalid by Scratch standards",
+        "401 Unauthorized": "invalid or no <code>session</code> in cookies"
+      },
+      "auth": "administrative-endpoints",
+      "returns": null,
+      "body": {
+        "type": "Ratelimit",
+        "ratelimit": 30
+      }
+    },
+    {
+      "type": "section",
+      "heading": "Ban Endpoints",
+      "paragraphs": [
+        "These endpoints are to do with getting and setting bans on the registration API."
+      ]
+    },
+    {
+      "type": "endpoint",
+      "name": "Get All Bans",
+      "desc": "Fetch all currently active bans.",
+      "method": "GET",
+      "path": "/admin/bans",
+      "params": {},
+      "http": {
+        "200 OK": "returns list of <a href=\"#Ban-object\">Ban</a> objects",
+        "401 Unauthorized": "invalid or no <code>session</code> in cookies"
+      },
+      "auth": "administrative-endpoints",
+      "returns": {
+        "type": "Ban[]",
+        "username": "scratchusername",
+        "expiry": 1598537437
+      }
+    },
+    {
+      "type": "endpoint",
+      "name": "Get Single Ban",
+      "desc": "Fetch the active ban for a specific user, if any.",
+      "method": "GET",
+      "path": "/admin/bans/{username}",
+      "params": {
+        "username": {
+          "type": "string",
+          "desc": "Username to fetch ban for",
+          "query": false
+        }
+      },
+      "http": {
+        "200 OK": "returns <a href=\"#Ban-object\">Ban</a> object",
+        "400 Bad Request": "username invalid by Scratch standards",
+        "401 Unauthorized": "invalid or no <code>session</code> in cookies",
+        "404 Not Found": "no ban currently in force for that user"
+      },
+      "auth": "administrative-endpoints",
+      "returns": {
+        "type": "PartialBan",
+        "expiry": 1598537437
+      }
+    },
+    {
+      "type": "endpoint",
+      "name": "Modify Bans",
+      "desc": "Modify or put multiple bans into force. Invalid entries are ignored.",
+      "method": "PATCH",
+      "path": "/admin/bans",
+      "params": {},
+      "http": {
+        "204 No Content": "success",
+        "401 Unauthorized": "invalid or no <code>session</code> in cookies"
+      },
+      "auth": "administrative-endpoints",
+      "returns": null,
+      "body": {
+        "type": "Ban[]",
+        "username": "scratchusername",
+        "expiry": 1598537437
+      }
+    },
+    {
+      "type": "endpoint",
+      "name": "Modify Single Ban",
+      "desc": "Ban a user or modify their existing ban.",
+      "method": "GET",
+      "path": "/admin/bans/{username}",
+      "params": {
+        "username": {
+          "type": "string",
+          "desc": "Username to ban",
+          "query": false
+        }
+      },
+      "http": {
+        "204 No Content": "success",
+        "400 Bad Request": "username invalid by Scratch standards",
+        "401 Unauthorized": "invalid or no <code>session</code> in cookies"
+      },
+      "auth": "administrative-endpoints",
+      "returns": null,
+      "body": {
+        "type": "PartialBan",
+        "expiry": 1598537437
+      }
+    },
+    {
+      "type": "endpoint",
+      "name": "Unban",
+      "desc": "Unban a user. This is idempotent; unbanning the same user multiple times will unban them once (unless they are banned again).",
+      "method": "DELETE",
+      "path": "/admin/bans/{username}",
+      "params": {
+        "username": {
+          "type": "string",
+          "desc": "Username to unban",
+          "query": false
+        }
+      },
+      "http": {
+        "204 No Content": "success",
+        "400 Bad Request": "username invalid by Scratch standards",
+        "401 Unauthorized": "invalid or no <code>session</code> in cookies"
+      },
+      "auth": "administrative-endpoints",
+      "returns": null
+    },
+    {
+      "type": "section",
+      "heading": "Audit Log Endpoints",
+      "paragraphs": [
+        "Admins' actions are recorded. Fetch those logs with these endpoints."
+      ]
+    },
+    {
+      "type": "endpoint",
+      "name": "Get Audit Logs",
+      "desc": "Get logs of who has used this API to perform what admin action. These logs are accessible only by administrators.",
+      "method": "GET",
+      "path": "/admin/logs",
+      "params": {
+        "limit": {
+          "type": "integer",
+          "desc": "Return at most <code>limit</code> logs. This can be arbitrarily large, but defaults to 100 and cannot be unlimited.",
+          "query": true
+        },
+        "start": {
+          "type": "integer",
+          "desc": "Return logs that happened before (not including) the log with ID <code>start</code>. Usually used for getting the next page of logs. This does not have to be a valid ID (though it usually is)",
+          "query": true
+        },
+        "before": {
+          "type": "integer",
+          "desc": "Return logs that happened before (and including) the Unix epoch time <code>before</code>",
+          "query": true
+        },
+        "end": {
+          "type": "integer",
+          "desc": "Return logs that happened after (not including) the log with ID <code>end</code>",
+          "query": true
+        },
+        "after": {
+          "type": "integer",
+          "desc": "Return logs that happened after (and including) the Unix epoch time <code>after</code>. Usually used to limit returned logs by time",
+          "query": true
+        },
+        "username": {
+          "type": "string",
+          "desc": "Only return logs with the username <code>username</code>",
+          "query": true
+        },
+        "type": {
+          "type": "integer",
+          "desc": "Only return logs with the <a href=\"#audit-log-types\">audit log type</a> <code>type</code>",
+          "query": true
+        }
+      },
+      "http": {
+        "200 OK": "returns list of <a href=\"#auditlog-object\">AuditLog</a> objects",
+        "400 Bad Request": "<code>start</code> is after <code>end</code>, <code>before</code> is after <code>after</code>, <code>type</code> is invalid, or a query param was the wrong type",
+        "401 Unauthorized": "invalid or no <code>session</code> in cookies"
+      },
+      "auth": "administrative-endpoints",
+      "returns": {
+        "__type__": "AuditLog[]",
+        "id": 123,
+        "username": "actionperformer",
+        "time": "1566974952",
+        "type": 1,
+        "data": "{\"username\": \"ScratchUsername\", \"expiry\": 1234567890}"
+      }
+    },
+    {
+      "type": "endpoint",
+      "name": "Get Audit Log",
+      "desc": "Fetch the information for a single audit log entry.",
+      "method": "GET",
+      "path": "/admin/logs/{log ID}",
+      "params": {
+        "log ID": {
+          "type": "integer",
+          "desc": "ID of audit log entry to fetch",
+          "query": false
+        }
+      },
+      "http": {
+        "200 OK": "returns single <a href=\"#auditlog-object\">Log</a> object",
+        "401 Unauthorized": "invalid or no <code>session</code> in cookies",
+        "404 Not Found": "no log with such ID"
+      },
+      "auth": "administrative-endpoints",
+      "returns": {
+        "__type__": "AuditLog",
+        "id": 123,
+        "username": "actionperformer",
+        "time": "1566974952",
+        "type": 1,
+        "data": "{\"username\": \"ScratchUsername\", \"expiry\": 1234567890}"
+      }
+    },
+    {
+      "type": "section",
+      "heading": "Miscellaneous Admin Tools",
+      "paragraphs": [
+        "Admins have a few other tools available as well."
+      ]
+    },
+    {
+      "type": "endpoint",
+      "name": "Get Client Info",
+      "desc": "Fetch information about a certain client. The token is partially censored.",
+      "method": "GET",
+      "path": "/admin/client/{client ID}",
+      "params": {
+        "client ID": {
+          "type": "integer",
+          "desc": "ID of client whose info is to be fetched",
+          "query": false
+        }
+      },
+      "http": {
+        "200 OK": "returns <a href=\"#client-object\">Client</a> object",
+        "401 Unauthorized": "invalid or no <code>session</code> in cookies",
+        "404 Not Found": "no client with that ID"
+      },
+      "auth": "administrative-endpoints",
+      "returns": {
+        "type": "Client",
+        "client_id": 1234567890,
+        "token": "EaFfBJdC******...",
+        "username": "scratchusername",
+        "ratelimit": 30
+      }
+    },
+    {
+      "type": "section",
       "heading": "Objects",
       "paragraphs": [
-        "Various endpoints have defined return types. They are documented below."
+        "Various endpoints have defined return types or body structures. They are documented below."
       ]
     },
     {
@@ -432,6 +776,63 @@
       }
     },
     {
+      "type": "object",
+      "name": "Ratelimit",
+      "desc": "Holds data about a user's ratelimit.",
+      "fields": {
+        "username": {"type": "string", "desc": "username being ratelimited"},
+        "ratelimit": {"type": "integer", "desc": "how many requests they can make per minute"}
+      }
+    },
+    {
+      "type": "object",
+      "name": "PartialRatelimit",
+      "desc": "Holds data about a user's ratelimit, without their name",
+      "fields": {
+        "ratelimit": {"type": "integer", "desc": "how many requests they can make per minute"}
+      }
+    },
+    {
+      "type": "object",
+      "name": "Ban",
+      "desc": "Holds data about a user's ban status.",
+      "fields": {
+        "username": {"type": "string", "desc": "username being banned"},
+        "expiry": {"type": "integer?", "desc": "Unix timestamp when their ban expires. <code>null</code> means a permanent ban."}
+      }
+    },
+    {
+      "type": "object",
+      "name": "PartialBan",
+      "desc": "Holds data about a user's ban status, without their name.",
+      "fields": {
+        "expiry": {"type": "integer?", "desc": "Unix epoch time when their ban expires. <code>null</code> means a permanent ban."}
+      }
+    },
+    {
+      "type": "object",
+      "name": "AuditLog",
+      "desc": "Holds log data for an admin action.",
+      "fields": {
+        "id": {"type": "integer", "desc": "log ID"},
+        "username": {"type": "string", "desc": "username of action performer"},
+        "time": {"type": "integer", "desc": "Unix epoch time of log"},
+        "type": {"type": "integer", "desc": "<a href=\"#audit-log-types\">audit log type</a>"},
+        "data": {"type": "string", "desc": "stringified JSON of action data"}
+      }
+    },
+    {
+      "type": "object",
+      "name": "Client",
+      "desc": "Holds data about a client.",
+      "fields": {
+        "client_id": {"type": "integer", "desc": "client ID"},
+        "token": {"type": "string", "desc": "partially censored token of client"},
+        "username": {"type": "string", "desc": "username of owner"},
+        "ratelimit": {"type": "integer?", "desc": "how many requests this client can make per minute. Can be <code>null</code> if this client has never been used yet."}
+      }
+    },
+    {
       "type": "section",
       "heading": "Log Types",
       "paragraphs": [
@@ -441,6 +842,18 @@
           "<code>2</code>: verification succeeded",
           "<code>3</code>: verification failed",
           "<code>4</code>: verification invalidated"
+        ]}
+      ]
+    },
+    {
+      "type": "section",
+      "heading": "Audit Log Types",
+      "paragraphs": [
+        "Audit logs can have three types:",
+        {"type": "ul", "items": [
+          "<code>1</code>: user banned or user ban modified",
+          "<code>2</code>: user ratelimit modified",
+          "<code>3</code>: user unbanned"
         ]}
       ]
     }

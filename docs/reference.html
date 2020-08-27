@@ -38,7 +38,7 @@
 <table><caption>Returns a <a href="#verification-object">Verification</a> object</caption>
 <tr><td class="pre">{
   "code": "EJAAFcffGJeFDCGdJB...",
-  "username": "ScratchUsername"
+  "username": "scratchusername"
 }</td></tr>
 </table>
 </div></div>
@@ -102,7 +102,7 @@
 <table><caption>Returns a <a href="#verification-object">Verification</a> object</caption>
 <tr><td class="pre">{
   "code": "EJAAFcffGJeFDCGdJB...",
-  "username": "ScratchUsername"
+  "username": "scratchusername"
 }</td></tr>
 </table>
 </div></div>
@@ -164,7 +164,7 @@
 <tr><td class="pre">{
   "client_id": 10114764,
   "token": "dd9410f80ba0...",
-  "username": "ScratchUsername"
+  "username": "scratchusername"
 }</td></tr>
 </table>
 </div></div>
@@ -183,7 +183,7 @@
 <tr><td class="pre">{
   "client_id": 10114764,
   "token": "dd9410f80ba0...",
-  "username": "ScratchUsername"
+  "username": "scratchusername"
 }</td></tr>
 </table>
 </div></div>
@@ -201,7 +201,7 @@
 <tr><td class="pre">{
   "client_id": 10114764,
   "token": "dd9410f80ba0...",
-  "username": "ScratchUsername"
+  "username": "scratchusername"
 }</td></tr>
 </table>
 </div></div>
@@ -264,7 +264,7 @@
 <tr><td class="pre">{
   "log_id": 123,
   "client_id": 1234567890,
-  "username": "ScratchUsername",
+  "username": "scratchusername",
   "log_time": "1566974952",
   "log_type": 1
 }</td></tr>
@@ -288,14 +288,293 @@
 <tr><td class="pre">{
   "log_id": 123,
   "client_id": 1234567890,
-  "username": "ScratchUsername",
+  "username": "scratchusername",
   "log_time": "1566974952",
   "log_type": 1
 }</td></tr>
 </table>
 </div></div>
+<h2 id="administrative-endpoints">Administrative Endpoints</h2>
+<p>The following endpoints can only be accessed by administrators.</p>
+<p>Administrators must be logged in with the <a href="#finish-logging-in-endpoint">Finish Logging In endpoint</a> to access these endpoints.</p>
+<h2 id="ratelimit-endpoints">Ratelimit Endpoints</h2>
+<p>These endpoints are to do with getting and setting ratelimits on the main API.</p>
+<h3 id="get-all-ratelimits-endpoint">Get All Ratelimits Endpoint</h3>
+<p>Fetch all currently active ratelimits.</p>
+<div class="endpoint">
+<div class="method-path auth-needed" onclick="showOrHide(this)"><span class="method">GET</span> <code>/admin/ratelimits</code> <a href="#administrative-endpoints"><img src="https://image.flaticon.com/icons/png/512/61/61457.png" title="Authorization necessary" /></a></div>
+<div style="display: none">
+<table><caption>HTTP statuses</caption>
+<tr><th>Status</th><th>Meaning</th>
+<tr><td>200 OK</td><td>returns list of <a href="#ratelimit-object">Ratelimit</a> objects</td></tr>
+<tr><td>401 Unauthorized</td><td>invalid or no <code>session</code> in cookies</td></tr>
+</table>
+<table><caption>Returns a list of <a href="#ratelimit-object">Ratelimit</a> objects</caption>
+<tr><td class="pre">{
+  "username": "scratchusername",
+  "ratelimit": 30
+}</td></tr>
+</table>
+</div></div>
+<h3 id="get-single-ratelimit-endpoint">Get Single Ratelimit Endpoint</h3>
+<p>Fetch ratelimits for a particular user.</p>
+<div class="endpoint">
+<div class="method-path auth-needed" onclick="showOrHide(this)"><span class="method">GET</span> <code>/admin/ratelimits/<span class="param">{username}</span></code> <a href="#administrative-endpoints"><img src="https://image.flaticon.com/icons/png/512/61/61457.png" title="Authorization necessary" /></a></div>
+<div style="display: none">
+<table><caption>URL Params</caption>
+<tr><th>Field</th><th>Type</th><th>Description</th>
+<tr><td>username</td><td>string</td><td>Username to fetch ratelimits for</td></tr>
+</table>
+<table><caption>HTTP statuses</caption>
+<tr><th>Status</th><th>Meaning</th>
+<tr><td>200 OK</td><td>returns <a href="#ratelimit-object">Ratelimit</a> object</td></tr>
+<tr><td>400 Bad Request</td><td>username invalid by Scratch standards</td></tr>
+<tr><td>401 Unauthorized</td><td>invalid or no <code>session</code> in cookies</td></tr>
+<tr><td>404 Not Found</td><td>no ratelimit set for that user</td></tr>
+</table>
+<table><caption>Returns a <a href="#partialratelimit-object">PartialRatelimit</a> object</caption>
+<tr><td class="pre">{
+  "ratelimit": 30
+}</td></tr>
+</table>
+</div></div>
+<h3 id="modify-ratelimits-endpoint">Modify Ratelimits Endpoint</h3>
+<p>Modify or set ratelimits for multiple users at once. Only users specified will modified; the rest will not be touched. Invalid entries are ignored.</p>
+<div class="endpoint">
+<div class="method-path auth-needed" onclick="showOrHide(this)"><span class="method">PATCH</span> <code>/admin/ratelimits</code> <a href="#administrative-endpoints"><img src="https://image.flaticon.com/icons/png/512/61/61457.png" title="Authorization necessary" /></a></div>
+<div style="display: none">
+<table><caption>HTTP statuses</caption>
+<tr><th>Status</th><th>Meaning</th>
+<tr><td>204 No Content</td><td>success</td></tr>
+<tr><td>401 Unauthorized</td><td>invalid or no <code>session</code> in cookies</td></tr>
+</table>
+<table><caption>Returns nothing</caption>
+<tr><td class="pre"></td></tr>
+</table>
+<table><caption>Request body: a list of <a href="#ratelimit-object">Ratelimit</a> objects</caption>
+<tr><td class="pre">{
+  "username": "scratchusername",
+  "ratelimit": 30
+}</td></tr>
+</table>
+</div></div>
+<h3 id="modify-single-ratelimit-endpoint">Modify Single Ratelimit Endpoint</h3>
+<p>Modify or set ratelimits for a specific user. Nonexistent users can be set preemptively.</p>
+<div class="endpoint">
+<div class="method-path auth-needed" onclick="showOrHide(this)"><span class="method">POST</span> <code>/admin/ratelimits/<span class="param">{username}</span></code> <a href="#administrative-endpoints"><img src="https://image.flaticon.com/icons/png/512/61/61457.png" title="Authorization necessary" /></a></div>
+<div style="display: none">
+<table><caption>URL Params</caption>
+<tr><th>Field</th><th>Type</th><th>Description</th>
+<tr><td>username</td><td>string</td><td>Username to set ratelimits for</td></tr>
+</table>
+<table><caption>HTTP statuses</caption>
+<tr><th>Status</th><th>Meaning</th>
+<tr><td>204 No Content</td><td>success</td></tr>
+<tr><td>400 Bad Request</td><td>username invalid by Scratch standards</td></tr>
+<tr><td>401 Unauthorized</td><td>invalid or no <code>session</code> in cookies</td></tr>
+</table>
+<table><caption>Returns nothing</caption>
+<tr><td class="pre"></td></tr>
+</table>
+<table><caption>Request body: a <a href="#ratelimit-object">Ratelimit</a> object</caption>
+<tr><td class="pre">{
+  "ratelimit": 30
+}</td></tr>
+</table>
+</div></div>
+<h2 id="ban-endpoints">Ban Endpoints</h2>
+<p>These endpoints are to do with getting and setting bans on the registration API.</p>
+<h3 id="get-all-bans-endpoint">Get All Bans Endpoint</h3>
+<p>Fetch all currently active bans.</p>
+<div class="endpoint">
+<div class="method-path auth-needed" onclick="showOrHide(this)"><span class="method">GET</span> <code>/admin/bans</code> <a href="#administrative-endpoints"><img src="https://image.flaticon.com/icons/png/512/61/61457.png" title="Authorization necessary" /></a></div>
+<div style="display: none">
+<table><caption>HTTP statuses</caption>
+<tr><th>Status</th><th>Meaning</th>
+<tr><td>200 OK</td><td>returns list of <a href="#Ban-object">Ban</a> objects</td></tr>
+<tr><td>401 Unauthorized</td><td>invalid or no <code>session</code> in cookies</td></tr>
+</table>
+<table><caption>Returns a list of <a href="#ban-object">Ban</a> objects</caption>
+<tr><td class="pre">{
+  "username": "scratchusername",
+  "expiry": 1598537437
+}</td></tr>
+</table>
+</div></div>
+<h3 id="get-single-ban-endpoint">Get Single Ban Endpoint</h3>
+<p>Fetch the active ban for a specific user, if any.</p>
+<div class="endpoint">
+<div class="method-path auth-needed" onclick="showOrHide(this)"><span class="method">GET</span> <code>/admin/bans/<span class="param">{username}</span></code> <a href="#administrative-endpoints"><img src="https://image.flaticon.com/icons/png/512/61/61457.png" title="Authorization necessary" /></a></div>
+<div style="display: none">
+<table><caption>URL Params</caption>
+<tr><th>Field</th><th>Type</th><th>Description</th>
+<tr><td>username</td><td>string</td><td>Username to fetch ban for</td></tr>
+</table>
+<table><caption>HTTP statuses</caption>
+<tr><th>Status</th><th>Meaning</th>
+<tr><td>200 OK</td><td>returns <a href="#Ban-object">Ban</a> object</td></tr>
+<tr><td>400 Bad Request</td><td>username invalid by Scratch standards</td></tr>
+<tr><td>401 Unauthorized</td><td>invalid or no <code>session</code> in cookies</td></tr>
+<tr><td>404 Not Found</td><td>no ban currently in force for that user</td></tr>
+</table>
+<table><caption>Returns a <a href="#partialban-object">PartialBan</a> object</caption>
+<tr><td class="pre">{
+  "expiry": 1598537437
+}</td></tr>
+</table>
+</div></div>
+<h3 id="modify-bans-endpoint">Modify Bans Endpoint</h3>
+<p>Modify or put multiple bans into force. Invalid entries are ignored.</p>
+<div class="endpoint">
+<div class="method-path auth-needed" onclick="showOrHide(this)"><span class="method">PATCH</span> <code>/admin/bans</code> <a href="#administrative-endpoints"><img src="https://image.flaticon.com/icons/png/512/61/61457.png" title="Authorization necessary" /></a></div>
+<div style="display: none">
+<table><caption>HTTP statuses</caption>
+<tr><th>Status</th><th>Meaning</th>
+<tr><td>204 No Content</td><td>success</td></tr>
+<tr><td>401 Unauthorized</td><td>invalid or no <code>session</code> in cookies</td></tr>
+</table>
+<table><caption>Returns nothing</caption>
+<tr><td class="pre"></td></tr>
+</table>
+<table><caption>Request body: a list of <a href="#ban-object">Ban</a> objects</caption>
+<tr><td class="pre">{
+  "username": "scratchusername",
+  "expiry": 1598537437
+}</td></tr>
+</table>
+</div></div>
+<h3 id="modify-single-ban-endpoint">Modify Single Ban Endpoint</h3>
+<p>Ban a user or modify their existing ban.</p>
+<div class="endpoint">
+<div class="method-path auth-needed" onclick="showOrHide(this)"><span class="method">GET</span> <code>/admin/bans/<span class="param">{username}</span></code> <a href="#administrative-endpoints"><img src="https://image.flaticon.com/icons/png/512/61/61457.png" title="Authorization necessary" /></a></div>
+<div style="display: none">
+<table><caption>URL Params</caption>
+<tr><th>Field</th><th>Type</th><th>Description</th>
+<tr><td>username</td><td>string</td><td>Username to ban</td></tr>
+</table>
+<table><caption>HTTP statuses</caption>
+<tr><th>Status</th><th>Meaning</th>
+<tr><td>204 No Content</td><td>success</td></tr>
+<tr><td>400 Bad Request</td><td>username invalid by Scratch standards</td></tr>
+<tr><td>401 Unauthorized</td><td>invalid or no <code>session</code> in cookies</td></tr>
+</table>
+<table><caption>Returns nothing</caption>
+<tr><td class="pre"></td></tr>
+</table>
+<table><caption>Request body: a <a href="#partialban-object">PartialBan</a> object</caption>
+<tr><td class="pre">{
+  "expiry": 1598537437
+}</td></tr>
+</table>
+</div></div>
+<h3 id="unban-endpoint">Unban Endpoint</h3>
+<p>Unban a user. This is idempotent; unbanning the same user multiple times will unban them once (unless they are banned again).</p>
+<div class="endpoint">
+<div class="method-path auth-needed" onclick="showOrHide(this)"><span class="method">DELETE</span> <code>/admin/bans/<span class="param">{username}</span></code> <a href="#administrative-endpoints"><img src="https://image.flaticon.com/icons/png/512/61/61457.png" title="Authorization necessary" /></a></div>
+<div style="display: none">
+<table><caption>URL Params</caption>
+<tr><th>Field</th><th>Type</th><th>Description</th>
+<tr><td>username</td><td>string</td><td>Username to unban</td></tr>
+</table>
+<table><caption>HTTP statuses</caption>
+<tr><th>Status</th><th>Meaning</th>
+<tr><td>204 No Content</td><td>success</td></tr>
+<tr><td>400 Bad Request</td><td>username invalid by Scratch standards</td></tr>
+<tr><td>401 Unauthorized</td><td>invalid or no <code>session</code> in cookies</td></tr>
+</table>
+<table><caption>Returns nothing</caption>
+<tr><td class="pre"></td></tr>
+</table>
+</div></div>
+<h2 id="audit-log-endpoints">Audit Log Endpoints</h2>
+<p>Admins' actions are recorded. Fetch those logs with these endpoints.</p>
+<h3 id="get-audit-logs-endpoint">Get Audit Logs Endpoint</h3>
+<p>Get logs of who has used this API to perform what admin action. These logs are accessible only by administrators.</p>
+<div class="endpoint">
+<div class="method-path auth-needed" onclick="showOrHide(this)"><span class="method">GET</span> <code>/admin/logs</code> <a href="#administrative-endpoints"><img src="https://image.flaticon.com/icons/png/512/61/61457.png" title="Authorization necessary" /></a></div>
+<div style="display: none">
+<table><caption>URL Params</caption>
+<tr><th>Field</th><th>Type</th><th>Description</th>
+</table>
+<table><caption>Query String Params</caption>
+<tr><th>Field</th><th>Type</th><th>Description</th>
+<tr><td>limit</td><td>integer</td><td>Return at most <code>limit</code> logs. This can be arbitrarily large, but defaults to 100 and cannot be unlimited.</td></tr>
+<tr><td>start</td><td>integer</td><td>Return logs that happened before (not including) the log with ID <code>start</code>. Usually used for getting the next page of logs. This does not have to be a valid ID (though it usually is)</td></tr>
+<tr><td>before</td><td>integer</td><td>Return logs that happened before (and including) the Unix epoch time <code>before</code></td></tr>
+<tr><td>end</td><td>integer</td><td>Return logs that happened after (not including) the log with ID <code>end</code></td></tr>
+<tr><td>after</td><td>integer</td><td>Return logs that happened after (and including) the Unix epoch time <code>after</code>. Usually used to limit returned logs by time</td></tr>
+<tr><td>username</td><td>string</td><td>Only return logs with the username <code>username</code></td></tr>
+<tr><td>type</td><td>integer</td><td>Only return logs with the <a href="#audit-log-types">audit log type</a> <code>type</code></td></tr>
+</table>
+<table><caption>HTTP statuses</caption>
+<tr><th>Status</th><th>Meaning</th>
+<tr><td>200 OK</td><td>returns list of <a href="#auditlog-object">AuditLog</a> objects</td></tr>
+<tr><td>400 Bad Request</td><td><code>start</code> is after <code>end</code>, <code>before</code> is after <code>after</code>, <code>type</code> is invalid, or a query param was the wrong type</td></tr>
+<tr><td>401 Unauthorized</td><td>invalid or no <code>session</code> in cookies</td></tr>
+</table>
+<table><caption>Returns a list of <a href="#auditlog-object">AuditLog</a> objects</caption>
+<tr><td class="pre">{
+  "id": 123,
+  "username": "actionperformer",
+  "time": "1566974952",
+  "type": 1,
+  "data": "{\"username\": \"ScratchUsername\", \"expiry\": 1234567890}"
+}</td></tr>
+</table>
+</div></div>
+<h3 id="get-audit-log-endpoint">Get Audit Log Endpoint</h3>
+<p>Fetch the information for a single audit log entry.</p>
+<div class="endpoint">
+<div class="method-path auth-needed" onclick="showOrHide(this)"><span class="method">GET</span> <code>/admin/logs/<span class="param">{log ID}</span></code> <a href="#administrative-endpoints"><img src="https://image.flaticon.com/icons/png/512/61/61457.png" title="Authorization necessary" /></a></div>
+<div style="display: none">
+<table><caption>URL Params</caption>
+<tr><th>Field</th><th>Type</th><th>Description</th>
+<tr><td>log ID</td><td>integer</td><td>ID of audit log entry to fetch</td></tr>
+</table>
+<table><caption>HTTP statuses</caption>
+<tr><th>Status</th><th>Meaning</th>
+<tr><td>200 OK</td><td>returns single <a href="#auditlog-object">Log</a> object</td></tr>
+<tr><td>401 Unauthorized</td><td>invalid or no <code>session</code> in cookies</td></tr>
+<tr><td>404 Not Found</td><td>no log with such ID</td></tr>
+</table>
+<table><caption>Returns a <a href="#auditlog-object">AuditLog</a> object</caption>
+<tr><td class="pre">{
+  "id": 123,
+  "username": "actionperformer",
+  "time": "1566974952",
+  "type": 1,
+  "data": "{\"username\": \"ScratchUsername\", \"expiry\": 1234567890}"
+}</td></tr>
+</table>
+</div></div>
+<h2 id="miscellaneous-admin-tools">Miscellaneous Admin Tools</h2>
+<p>Admins have a few other tools available as well.</p>
+<h3 id="get-client-info-endpoint">Get Client Info Endpoint</h3>
+<p>Fetch information about a certain client. The token is partially censored.</p>
+<div class="endpoint">
+<div class="method-path auth-needed" onclick="showOrHide(this)"><span class="method">GET</span> <code>/admin/client/<span class="param">{client ID}</span></code> <a href="#administrative-endpoints"><img src="https://image.flaticon.com/icons/png/512/61/61457.png" title="Authorization necessary" /></a></div>
+<div style="display: none">
+<table><caption>URL Params</caption>
+<tr><th>Field</th><th>Type</th><th>Description</th>
+<tr><td>client ID</td><td>integer</td><td>ID of client whose info is to be fetched</td></tr>
+</table>
+<table><caption>HTTP statuses</caption>
+<tr><th>Status</th><th>Meaning</th>
+<tr><td>200 OK</td><td>returns <a href="#client-object">Client</a> object</td></tr>
+<tr><td>401 Unauthorized</td><td>invalid or no <code>session</code> in cookies</td></tr>
+<tr><td>404 Not Found</td><td>no client with that ID</td></tr>
+</table>
+<table><caption>Returns a <a href="#client-object">Client</a> object</caption>
+<tr><td class="pre">{
+  "client_id": 1234567890,
+  "token": "EaFfBJdC******...",
+  "username": "scratchusername",
+  "ratelimit": 30
+}</td></tr>
+</table>
+</div></div>
 <h2 id="objects">Objects</h2>
-<p>Various endpoints have defined return types. They are documented below.</p>
+<p>Various endpoints have defined return types or body structures. They are documented below.</p>
 <h3 id="verification-object">Verification Object</h3>
 <p>Holds data related to verifying a user on Scratch.</p>
 <table><caption>Verification Structure</caption>
@@ -331,6 +610,57 @@
 <tr><td>log_time</td><td>integer</td><td>Unix epoch time of log</td></tr>
 <tr><td>log_type</td><td>integer</td><td><a href="#log-types">log type</a></td></tr>
 </table>
+<h3 id="ratelimit-object">Ratelimit Object</h3>
+<p>Holds data about a user's ratelimit.</p>
+<table><caption>Ratelimit Structure</caption>
+<tr><th>Field</th><th>Type</th><th>Description</th></tr>
+
+<tr><td>username</td><td>string</td><td>username being ratelimited</td></tr>
+<tr><td>ratelimit</td><td>integer</td><td>how many requests they can make per minute</td></tr>
+</table>
+<h3 id="partialratelimit-object">PartialRatelimit Object</h3>
+<p>Holds data about a user's ratelimit, without their name</p>
+<table><caption>PartialRatelimit Structure</caption>
+<tr><th>Field</th><th>Type</th><th>Description</th></tr>
+
+<tr><td>ratelimit</td><td>integer</td><td>how many requests they can make per minute</td></tr>
+</table>
+<h3 id="ban-object">Ban Object</h3>
+<p>Holds data about a user's ban status.</p>
+<table><caption>Ban Structure</caption>
+<tr><th>Field</th><th>Type</th><th>Description</th></tr>
+
+<tr><td>username</td><td>string</td><td>username being banned</td></tr>
+<tr><td>expiry</td><td>integer?</td><td>Unix timestamp when their ban expires. <code>null</code> means a permanent ban.</td></tr>
+</table>
+<h3 id="partialban-object">PartialBan Object</h3>
+<p>Holds data about a user's ban status, without their name.</p>
+<table><caption>PartialBan Structure</caption>
+<tr><th>Field</th><th>Type</th><th>Description</th></tr>
+
+<tr><td>expiry</td><td>integer?</td><td>Unix epoch time when their ban expires. <code>null</code> means a permanent ban.</td></tr>
+</table>
+<h3 id="auditlog-object">AuditLog Object</h3>
+<p>Holds log data for an admin action.</p>
+<table><caption>AuditLog Structure</caption>
+<tr><th>Field</th><th>Type</th><th>Description</th></tr>
+
+<tr><td>id</td><td>integer</td><td>log ID</td></tr>
+<tr><td>username</td><td>string</td><td>username of action performer</td></tr>
+<tr><td>time</td><td>integer</td><td>Unix epoch time of log</td></tr>
+<tr><td>type</td><td>integer</td><td><a href="#audit-log-types">audit log type</a></td></tr>
+<tr><td>data</td><td>string</td><td>stringified JSON of action data</td></tr>
+</table>
+<h3 id="client-object">Client Object</h3>
+<p>Holds data about a client.</p>
+<table><caption>Client Structure</caption>
+<tr><th>Field</th><th>Type</th><th>Description</th></tr>
+
+<tr><td>client_id</td><td>integer</td><td>client ID</td></tr>
+<tr><td>token</td><td>string</td><td>partially censored token of client</td></tr>
+<tr><td>username</td><td>string</td><td>username of owner</td></tr>
+<tr><td>ratelimit</td><td>integer?</td><td>how many requests this client can make per minute. Can be <code>null</code> if this client has never been used yet.</td></tr>
+</table>
 <h2 id="log-types">Log Types</h2>
 <p>Logs can have four types:</p>
 <ul>
@@ -338,6 +668,13 @@
 <li><code>2</code>: verification succeeded</li>
 <li><code>3</code>: verification failed</li>
 <li><code>4</code>: verification invalidated</li>
+</ul>
+<h2 id="audit-log-types">Audit Log Types</h2>
+<p>Audit logs can have three types:</p>
+<ul>
+<li><code>1</code>: user banned or user ban modified</li>
+<li><code>2</code>: user ratelimit modified</li>
+<li><code>3</code>: user unbanned</li>
 </ul>
 </div><div id="contents"><h1>Navigation</h1>
 <div><a href="#api-reference">API&nbsp;Reference</a>
@@ -428,6 +765,91 @@
 </ul>
 </li>
 <li>
+<div><a href="#administrative-endpoints">Administrative&nbsp;Endpoints</a>
+<ul>
+</ul>
+</li>
+<li>
+<div><a href="#ratelimit-endpoints">Ratelimit&nbsp;Endpoints</a>
+<ul>
+<li>
+<div><a href="#get-all-ratelimits-endpoint">Get&nbsp;All&nbsp;Ratelimits&nbsp;Endpoint</a>
+<ul>
+</ul>
+</li>
+<li>
+<div><a href="#get-single-ratelimit-endpoint">Get&nbsp;Single&nbsp;Ratelimit&nbsp;Endpoint</a>
+<ul>
+</ul>
+</li>
+<li>
+<div><a href="#modify-ratelimits-endpoint">Modify&nbsp;Ratelimits&nbsp;Endpoint</a>
+<ul>
+</ul>
+</li>
+<li>
+<div><a href="#modify-single-ratelimit-endpoint">Modify&nbsp;Single&nbsp;Ratelimit&nbsp;Endpoint</a>
+<ul>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<div><a href="#ban-endpoints">Ban&nbsp;Endpoints</a>
+<ul>
+<li>
+<div><a href="#get-all-bans-endpoint">Get&nbsp;All&nbsp;Bans&nbsp;Endpoint</a>
+<ul>
+</ul>
+</li>
+<li>
+<div><a href="#get-single-ban-endpoint">Get&nbsp;Single&nbsp;Ban&nbsp;Endpoint</a>
+<ul>
+</ul>
+</li>
+<li>
+<div><a href="#modify-bans-endpoint">Modify&nbsp;Bans&nbsp;Endpoint</a>
+<ul>
+</ul>
+</li>
+<li>
+<div><a href="#modify-single-ban-endpoint">Modify&nbsp;Single&nbsp;Ban&nbsp;Endpoint</a>
+<ul>
+</ul>
+</li>
+<li>
+<div><a href="#unban-endpoint">Unban&nbsp;Endpoint</a>
+<ul>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<div><a href="#audit-log-endpoints">Audit&nbsp;Log&nbsp;Endpoints</a>
+<ul>
+<li>
+<div><a href="#get-audit-logs-endpoint">Get&nbsp;Audit&nbsp;Logs&nbsp;Endpoint</a>
+<ul>
+</ul>
+</li>
+<li>
+<div><a href="#get-audit-log-endpoint">Get&nbsp;Audit&nbsp;Log&nbsp;Endpoint</a>
+<ul>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<div><a href="#miscellaneous-admin-tools">Miscellaneous&nbsp;Admin&nbsp;Tools</a>
+<ul>
+<li>
+<div><a href="#get-client-info-endpoint">Get&nbsp;Client&nbsp;Info&nbsp;Endpoint</a>
+<ul>
+</ul>
+</li>
+</ul>
+</li>
+<li>
 <div><a href="#objects">Objects</a>
 <ul>
 <li>
@@ -450,10 +872,45 @@
 <ul>
 </ul>
 </li>
+<li>
+<div><a href="#ratelimit-object">Ratelimit&nbsp;Object</a>
+<ul>
+</ul>
+</li>
+<li>
+<div><a href="#partialratelimit-object">PartialRatelimit&nbsp;Object</a>
+<ul>
+</ul>
+</li>
+<li>
+<div><a href="#ban-object">Ban&nbsp;Object</a>
+<ul>
+</ul>
+</li>
+<li>
+<div><a href="#partialban-object">PartialBan&nbsp;Object</a>
+<ul>
+</ul>
+</li>
+<li>
+<div><a href="#auditlog-object">AuditLog&nbsp;Object</a>
+<ul>
+</ul>
+</li>
+<li>
+<div><a href="#client-object">Client&nbsp;Object</a>
+<ul>
+</ul>
+</li>
 </ul>
 </li>
 <li>
 <div><a href="#log-types">Log&nbsp;Types</a>
+<ul>
+</ul>
+</li>
+<li>
+<div><a href="#audit-log-types">Audit&nbsp;Log&nbsp;Types</a>
 <ul>
 </ul>
 </li>
