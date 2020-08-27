@@ -72,8 +72,7 @@
       "http": {
         "200 OK": "returns <a href=\"#verification-object\">Verification</a> object",
         "400 Bad Request": "username is invalid by Scratch rules",
-        "401 Unauthorized": "missing/invalid <a href=\"#authorization\">authorization</a>",
-        "404 Not Found": "username 404ed on Scratch API"
+        "401 Unauthorized": "missing/invalid <a href=\"#authorization\">authorization</a>"
       },
       "auth": true,
       "returns": {
@@ -121,8 +120,7 @@
       "http": {
         "204 No Content": "invalidation successful",
         "400 Bad Request": "username is invalid by Scratch rules",
-        "401 Unauthorized": "missing/invalid <a href=\"#authorization\">authorization</a>",
-        "404 Not Found": "username 404ed on Scratch API"
+        "401 Unauthorized": "missing/invalid <a href=\"#authorization\">authorization</a>"
       },
       "auth": true,
       "returns": null
@@ -150,7 +148,7 @@
       "http": {
         "200 OK": "returns <a href=\"#verification-object\">Verification</a> object",
         "400 Bad Request": "username is invalid by Scratch rules",
-        "404 Not Found": "username 404ed on Scratch API"
+        "403 Forbidden": "this username is banned from registering"
       },
       "returns": {
         "type": "Verification",
@@ -161,7 +159,7 @@
     {
       "type": "endpoint",
       "name": "Finish Logging In",
-      "desc": "Finish the process of logging in. Returns a <a href=\"#session-object\">Session</a> object on success.",
+      "desc": "Finish the process of logging in. If successful, response contains a <code>session</code> cookie that must be set for all endpoints listed after this one to work. Returns an <a href=\"#admin-object\">Admin</a> object on success.",
       "method": "POST",
       "path": "/users/{username}/finish-login",
       "params": {
@@ -172,14 +170,14 @@
         }
       },
       "http": {
-        "200 OK": "returns <a href=\"#session-object\">Session</a> object",
+        "200 OK": "returns <a href=\"#admin-object\">Admin</a> object",
         "400 Bad Request": "username is invalid by Scratch rules",
         "401 Unauthorized": "login failed",
         "404 Not Found": "username 404ed on Scratch API"
       },
       "returns": {
-        "type": "Session",
-        "session": 1234567890
+        "type": "Admin",
+        "admin": false
       }
     },
     {
@@ -193,20 +191,16 @@
           "type": "string",
           "desc": "The username to log out",
           "query": false
-        },
-        "session": {
-          "type": "integer",
-          "desc": "REQUIRED: Session ID returned by <a href=\"#finish-logging-in-endpoint\">Finish Logging In</a> endpoint",
-          "query": true
         }
       },
       "http": {
         "204 No Content": "successfully logged out",
         "400 Bad Request": "username is invalid by Scratch rules",
-        "401 Unauthorized": "<code>session</code> invalid or not specified",
+        "401 Unauthorized": "invalid or no <code>session</code> in cookies",
         "403 Forbidden": "username does not match session",
         "404 Not Found": "username 404ed on Scratch API"
       },
+      "auth": "finish-logging-in-endpoint",
       "returns": null
     },
     {
@@ -214,19 +208,14 @@
       "name": "Get Client Info",
       "desc": "Get your client ID, token, and username. Returns a <a href=\"#user-object\">User</a> object on success.",
       "method": "GET",
-      "path": "/session/{session ID}",
-      "params": {
-        "session ID": {
-          "type": "string",
-          "desc": "Session ID returned by <a href=\"#finish-logging-in-endpoint\">Finish Logging In</a> endpoint",
-          "query": false
-        }
-      },
+      "path": "/session",
+      "params": {},
       "http": {
         "200 OK": "returns <a href=\"#user-object\">User</a> object",
-        "401 Unauthorized": "<code>session ID</code> invalid or not specified",
+        "401 Unauthorized": "invalid or no <code>session</code> in cookies",
         "404 Not Found": "this user is not registered with the API yet"
       },
+      "auth": "finish-logging-in-endpoint",
       "returns": {
         "type": "User",
         "client_id": 10114764,
@@ -239,19 +228,14 @@
       "name": "Create Client",
       "desc": "If this user does not own a client yet, create and return one.",
       "method": "PUT",
-      "path": "/session/{session ID}",
-      "params": {
-        "session ID": {
-          "type": "string",
-          "desc": "Session ID returned by <a href=\"#finish-logging-in-endpoint\">Finish Logging In</a> endpoint",
-          "query": false
-        }
-      },
+      "path": "/session",
+      "params": {},
       "http": {
         "200 OK": "returns new <a href=\"#user-object\">User</a> object",
-        "401 Unauthorized": "<code>session ID</code> invalid or not specified",
+        "401 Unauthorized": "invalid or no <code>session</code> in cookies",
         "409 Conflict": "this user is already registered with the API"
       },
+      "auth": "finish-logging-in-endpoint",
       "returns": {
         "type": "User",
         "client_id": 10114764,
@@ -264,18 +248,13 @@
       "name": "Reset Token",
       "desc": "If you suspect that your token has been compromised, reset it through this endpoint.",
       "method": "PATCH",
-      "path": "/session/{session ID}",
-      "params": {
-        "session ID": {
-          "type": "string",
-          "desc": "Session ID returned by <a href=\"#finish-logging-in-endpoint\">Finish Logging In</a> endpoint",
-          "query": false
-        }
-      },
+      "path": "/session",
+      "params": {},
       "http": {
         "200 OK": "returns updated <a href=\"#user-object\">User</a> object",
-        "401 Unauthorized": "<code>session ID</code> invalid or not specified"
+        "401 Unauthorized": "invalid or no <code>session</code> in cookies"
       },
+      "auth": "finish-logging-in-endpoint",
       "returns": {
         "type": "User",
         "client_id": 10114764,
@@ -288,18 +267,13 @@
       "name": "Delete Client",
       "desc": "Deregister from the API. Returns 204 No Content on success.",
       "method": "DELETE",
-      "path": "/session/{session ID}",
-      "params": {
-        "session ID": {
-          "type": "string",
-          "desc": "Session ID returned by <a href=\"#finish-logging-in-endpoint\">Finish Logging In</a> endpoint",
-          "query": false
-        }
-      },
+      "path": "/session",
+      "params": {},
       "http": {
         "204 No Content": "client was successfully deleted",
-        "401 Unauthorized": "<code>session ID</code> invalid or not specified"
+        "401 Unauthorized": "invalid or no <code>session</code> in cookies"
       },
+      "auth": "finish-logging-in-endpoint",
       "returns": null
     },
     {
@@ -307,18 +281,13 @@
       "name": "Logout Session",
       "desc": "Invalidate this session ID.",
       "method": "POST",
-      "path": "/session/{session ID}/logout",
-      "params": {
-        "session ID": {
-          "type": "string",
-          "desc": "Session ID returned by <a href=\"#finish-logging-in-endpoint\">Finish Logging In</a> endpoint",
-          "query": false
-        }
-      },
+      "path": "/session/logout",
+      "params": {},
       "http": {
         "204 No Content": "successfully logged out",
-        "401 Unauthorized": "<code>session ID</code> invalid or not specified"
+        "401 Unauthorized": "invalid or no <code>session</code> in cookies"
       },
+      "auth": "finish-logging-in-endpoint",
       "returns": null
     },
     {
@@ -378,7 +347,7 @@
       },
       "http": {
         "200 OK": "returns list of <a href=\"#log-object\">Log</a> objects",
-        "400 Bad Request": "a query param was the wrong type",
+        "400 Bad Request": "<code>start</code> is after <code>end</code>, <code>before</code> is after <code>after</code>, <code>type</code> is invalid, or a query param was the wrong type",
         "403 Forbidden": "<code>limit</code> was greater than 500"
       },
       "returns": {
@@ -434,10 +403,10 @@
     },
     {
       "type": "object",
-      "name": "Session",
-      "desc": "Holds the session ID to use in other API registration endpoints.",
+      "name": "Admin",
+      "desc": "Indicates whether the user who just <a href=\"#finish-logging-in-endpoint\">finished logging in</a> is an admin on the site or not.",
       "fields": {
-        "session": {"type": "integer", "desc": "session ID to use"}
+        "admin": {"type": "boolean", "desc": "whether the user is an admin"}
       }
     },
     {
@@ -533,12 +502,12 @@
           "The API will send you a <a href=\"reference.html#verification-object\">Verification</a> object containing a code",
           "Post this code on your own profile comments",
           "Send an HTTP <span class=\"method\">POST</span> request to <code>/users/<span class=\"param\">{yourusername}</span>/finish-login</code>",
-          "You will receive a <a href=\"reference.html#session-object\">Session</a> object containing a single integer. This is your session ID; it lasts for a year",
-          "Assuming you haven't already created a client, send an HTTP <span class=\"method\">PUT</span> request to <code>/session/<span class=\"param\">{session}</span></code>",
+          "You will receive a cookie with your session ID. Set it; it lasts a year",
+          "Assuming you haven't already created a client, send an HTTP <span class=\"method\">PUT</span> request to <code>/session</code>",
           "You will receive a <a href=\"reference.html#user-object\">User</a> object containing your client ID and token",
           "Put your client ID and token into your app's configuration. Done!"
         ]},
-        "At any point, if it becomes necessary to fetch your info again, simply send an HTTP <span class=\"method\">GET</span> request to <code>/session/<span class=\"param\">{session}</span></code> and you will receive it. If you receive a 401 Unauthorized response, you need to get another session ID by following steps 1-5."
+        "At any point, if it becomes necessary to fetch your info again, simply send an HTTP <span class=\"method\">GET</span> request to <code>/session</code> and you will receive it. If you receive a 401 Unauthorized response, you need to get another session ID by following steps 1-5."
       ]
     },
     {
@@ -559,14 +528,14 @@
         ]},
         "Or using the API:",
         {"type": "ol", "items": [
-          "<span class=\"method\">GET</span> <code>/session/<span class=\"param\">{session}</span></code> to fetch your info",
+          "<span class=\"method\">GET</span> <code>/session</code> to fetch your info",
           "If you receive your info, skip to step 8. Otherwise, continue with step 3",
           "Send an HTTP <span class=\"method\">POST</span> request to <code>/users/<span class=\"param\">{yourusername}</span>/login</code>",
           "The API will send you a <a href=\"reference.html#verification-object\">Verification</a> object containing a code",
           "Post this code on your own profile comments",
           "Send an HTTP <span class=\"method\">POST</span> request to <code>/users/<span class=\"param\">{yourusername}</span>/finish-login</code>",
-          "You will receive a <a href=\"reference.html#session-object\">Session</a> object containing a single integer. This is your session ID; it lasts for a year",
-          "Send an HTTP <span class=\"method\">PATCH</span> request to <code>/session/<span class=\"param\">{session}</span></code>",
+          "You will receive a cookie with your session ID. Set it; it lasts a year",
+          "Send an HTTP <span class=\"method\">PATCH</span> request to <code>/session</code>",
           "You will receive a new <a href=\"reference.html#user-object\">User</a> object containing your client ID and updated token",
           "Update your token in your app's configuration. Done!"
         ]}
@@ -590,14 +559,14 @@
         ]},
         "Or using the API:",
         {"type": "ol", "items": [
-          "<span class=\"method\">GET</span> <code>/session/<span class=\"param\">{session}</span></code> to fetch your info",
+          "<span class=\"method\">GET</span> <code>/session</code> to fetch your info",
           "If you receive your info, skip to step 8. Otherwise, continue with step 3",
           "Send an HTTP <span class=\"method\">POST</span> request to <code>/users/<span class=\"param\">{yourusername}</span>/login</code>",
           "The API will send you a <a href=\"reference.html#verification-object\">Verification</a> object containing a code",
           "Post this code on your own profile comments",
           "Send an HTTP <span class=\"method\">POST</span> request to <code>/users/<span class=\"param\">{yourusername}</span>/finish-login</code>",
-          "You will receive a <a href=\"reference.html#session-object\">Session</a> object containing a single integer. This is your session ID; it lasts for a year",
-          "Send an HTTP <span class=\"method\">DELETE</span> request to <code>/session/<span class=\"param\">{session}</span></code>",
+          "You will receive a cookie with your session ID. Set it; it lasts a year",
+          "Send an HTTP <span class=\"method\">DELETE</span> request to <code>/session</code>",
           "You will receive a 204 No Content response. :("
         ]},
         "<i>Note: This only deregisters your client from the API. You are still free to re-register later. Resetting your token is almost like deregistering and re-registering again.</i>"

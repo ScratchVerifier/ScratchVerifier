@@ -33,12 +33,12 @@
 <li>The API will send you a <a href="reference.html#verification-object">Verification</a> object containing a code</li>
 <li>Post this code on your own profile comments</li>
 <li>Send an HTTP <span class="method">POST</span> request to <code>/users/<span class="param">{yourusername}</span>/finish-login</code></li>
-<li>You will receive a <a href="reference.html#session-object">Session</a> object containing a single integer. This is your session ID; it lasts for a year</li>
-<li>Assuming you haven't already created a client, send an HTTP <span class="method">PUT</span> request to <code>/session/<span class="param">{session}</span></code></li>
+<li>You will receive a cookie with your session ID. Set it; it lasts a year</li>
+<li>Assuming you haven't already created a client, send an HTTP <span class="method">PUT</span> request to <code>/session</code></li>
 <li>You will receive a <a href="reference.html#user-object">User</a> object containing your client ID and token</li>
 <li>Put your client ID and token into your app's configuration. Done!</li>
 </ol>
-<p>At any point, if it becomes necessary to fetch your info again, simply send an HTTP <span class="method">GET</span> request to <code>/session/<span class="param">{session}</span></code> and you will receive it. If you receive a 401 Unauthorized response, you need to get another session ID by following steps 1-5.</p>
+<p>At any point, if it becomes necessary to fetch your info again, simply send an HTTP <span class="method">GET</span> request to <code>/session</code> and you will receive it. If you receive a 401 Unauthorized response, you need to get another session ID by following steps 1-5.</p>
 <h2 id="resetting-your-token">Resetting your Token</h2>
 <p>If you think your token has been compromised, you can reset your token using the website:</p>
 <ol>
@@ -54,14 +54,14 @@
 </ol>
 <p>Or using the API:</p>
 <ol>
-<li><span class="method">GET</span> <code>/session/<span class="param">{session}</span></code> to fetch your info</li>
+<li><span class="method">GET</span> <code>/session</code> to fetch your info</li>
 <li>If you receive your info, skip to step 8. Otherwise, continue with step 3</li>
 <li>Send an HTTP <span class="method">POST</span> request to <code>/users/<span class="param">{yourusername}</span>/login</code></li>
 <li>The API will send you a <a href="reference.html#verification-object">Verification</a> object containing a code</li>
 <li>Post this code on your own profile comments</li>
 <li>Send an HTTP <span class="method">POST</span> request to <code>/users/<span class="param">{yourusername}</span>/finish-login</code></li>
-<li>You will receive a <a href="reference.html#session-object">Session</a> object containing a single integer. This is your session ID; it lasts for a year</li>
-<li>Send an HTTP <span class="method">PATCH</span> request to <code>/session/<span class="param">{session}</span></code></li>
+<li>You will receive a cookie with your session ID. Set it; it lasts a year</li>
+<li>Send an HTTP <span class="method">PATCH</span> request to <code>/session</code></li>
 <li>You will receive a new <a href="reference.html#user-object">User</a> object containing your client ID and updated token</li>
 <li>Update your token in your app's configuration. Done!</li>
 </ol>
@@ -80,14 +80,14 @@
 </ol>
 <p>Or using the API:</p>
 <ol>
-<li><span class="method">GET</span> <code>/session/<span class="param">{session}</span></code> to fetch your info</li>
+<li><span class="method">GET</span> <code>/session</code> to fetch your info</li>
 <li>If you receive your info, skip to step 8. Otherwise, continue with step 3</li>
 <li>Send an HTTP <span class="method">POST</span> request to <code>/users/<span class="param">{yourusername}</span>/login</code></li>
 <li>The API will send you a <a href="reference.html#verification-object">Verification</a> object containing a code</li>
 <li>Post this code on your own profile comments</li>
 <li>Send an HTTP <span class="method">POST</span> request to <code>/users/<span class="param">{yourusername}</span>/finish-login</code></li>
-<li>You will receive a <a href="reference.html#session-object">Session</a> object containing a single integer. This is your session ID; it lasts for a year</li>
-<li>Send an HTTP <span class="method">DELETE</span> request to <code>/session/<span class="param">{session}</span></code></li>
+<li>You will receive a cookie with your session ID. Set it; it lasts a year</li>
+<li>Send an HTTP <span class="method">DELETE</span> request to <code>/session</code></li>
 <li>You will receive a 204 No Content response. :(</li>
 </ol>
 <p><i>Note: This only deregisters your client from the API. You are still free to re-register later. Resetting your token is almost like deregistering and re-registering again.</i></p>
