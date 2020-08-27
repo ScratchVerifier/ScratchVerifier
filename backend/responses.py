@@ -95,4 +95,3 @@ class Client(metaclass=Response):
     token: str
     username: str
     ratelimit: (int, Null)
-    banned: bool

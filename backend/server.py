@@ -622,7 +622,6 @@ class Server:
                           + '*' * (len(client['token']) - TOKEN_CENSOR_LEN)
         row = await self.db.get_ratelimit(username)
         client['ratelimit'] = row and row['ratelimit']
-        client['banned'] = (await self.db.get_ban(username)) is not None
         return web.json_response(client)
 
     async def gh_hook(self, request):
@@ -656,7 +655,7 @@ class Server:
 
     async def _file_handler(self, request, WEB_ROOT):
         WEB_ROOT = os.path.join(os.path.dirname(
-            os.path.dirname(__file__)
+            os.path.dirname(os.path.abspath(__file__))
         ), WEB_ROOT)
         PATH = request.match_info.get('path', 'index.html') or 'index.html'
         if '.' not in PATH.split('/')[-1]:

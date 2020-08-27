@@ -305,6 +305,8 @@ WHERE username=?', (username,))
 (username, expiry) VALUES (:username, :expiry)', data)
         await self.db.executemany('DELETE FROM scratchverifier_clients \
 WHERE username=?', ((i['username'],) for i in data))
+        await self.db.executemany('DELETE FROM scratchverifier_sessions \
+WHERE username=?', ((i['username'],) for i in data))
         await self.db.executemany(
             'INSERT INTO scratchverifier_auditlogs \
 (username, time, type, data) VALUES \
