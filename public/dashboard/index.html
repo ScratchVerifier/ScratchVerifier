@@ -129,6 +129,8 @@ window.onload = ()=>{
   }
   if (localStorage.getItem("isAdmin") === "true"){
       document.querySelector("#dashboardLink").setAttribute("style","display:unset;")
+      document.querySelector("#dashboardLink1").setAttribute("style","display:unset;")
+
   }
 
 }
@@ -138,7 +140,10 @@ window.onload = ()=>{
 <span>You have not registered yet, click below to create an app.</span><br><br>
 <div class="Login_Box">
   <button onclick="createApp()" class="smilejs-ripple submit">Create Client</button>
+  
 </div>
+<a id="dashboardLink1" href="/site/admin/dashboard.html" style="display:none;">Go to Admin Dashboard</a>
+
 </div>
 <div class="LoginPage_Content" style="display:none;" id="dashboard">
 <h1>Dashboard</h1><br>
