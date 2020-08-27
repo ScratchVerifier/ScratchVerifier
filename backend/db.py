@@ -330,6 +330,6 @@ WHERE username=?', (username,))
                 'username': performer,
                 'time': int(time.time()),
                 'type': 3, # unban
-                'data': json.dumps(username)
+                'data': json.dumps({'username': username})
             }
         )
