@@ -3,6 +3,7 @@ import sys
 import time
 import os
 import unittest
+from http.cookiejar import http2time # undocumented
 import requests
 sys.path.append(os.path.dirname(__file__))
 from backend.responses import *
@@ -299,7 +300,7 @@ class TestRatelimits(unittest.TestCase):
         """All of these tests requires an admin session."""
         set_session(0)
         session.post(API_ROOT + '/debug/1')
-        session.post(API_ROOT + '/admin/ratelimits/kenny2scratch',
+        session.post(API_ROOT + '/admin/ratelimits/nochanges',
                      json={'ratelimit': 60})
 
     def test_get_all(self):
@@ -318,14 +319,14 @@ class TestRatelimits(unittest.TestCase):
 
         found = False
         for ratelimit in resp:
-            if ratelimit['username'] == 'kenny2scratch':
+            if ratelimit['username'] == 'nochanges':
                 # setup set limit to 60, make sure that persists
                 self.assertEqual(ratelimit['ratelimit'], 60,
                                  'limit is different from what was set')
                 found = True
                 break
         # setup set limit for me, make sure it's there
-        self.assertTrue(found, 'no ratelimit for kenny2scratch')
+        self.assertTrue(found, 'no ratelimit for nochanges')
 
         # using admin session: off
         session.post(API_ROOT + '/debug/0')
@@ -339,7 +340,7 @@ class TestRatelimits(unittest.TestCase):
         # using admin session: on
         session.post(API_ROOT + '/debug/1')
 
-        resp = session.get(API_ROOT + '/admin/ratelimits/kenny2scratch')
+        resp = session.get(API_ROOT + '/admin/ratelimits/nochanges')
         # this was set earlier, so it should be 200
         self.assertEqual(resp.status_code, 200, 'ratelimit returned non-200')
 
@@ -362,7 +363,7 @@ class TestRatelimits(unittest.TestCase):
         # using admin session: off
         session.post(API_ROOT + '/debug/0')
 
-        resp = session.get(API_ROOT + '/admin/ratelimits/kenny2scratch')
+        resp = session.get(API_ROOT + '/admin/ratelimits/nochanges')
         # unauthenticated, unauthorized
         self.assertEqual(resp.status_code, 401, 'unauthenticated MUST be 401')
 
@@ -379,8 +380,8 @@ class TestRatelimits(unittest.TestCase):
         self.assertEqual(resp.status_code, 204, 'unsuccessful PATCH')
 
         # make sure only those were set
-        resp = session.get(API_ROOT + '/admin/ratelimits/kenny2scratch').json()
-        self.assertEqual(resp['ratelimit'], 60, 'PATCH modified kenny2scratch')
+        resp = session.get(API_ROOT + '/admin/ratelimits/nochanges').json()
+        self.assertEqual(resp['ratelimit'], 60, 'PATCH modified nochanges')
 
         # make sure those that were set were set right
         resp = session.get(API_ROOT + '/admin/ratelimits/validusername')
@@ -437,6 +438,82 @@ class TestRatelimits(unittest.TestCase):
                             json={'ratelimit': 50})
         # you know the drill
         self.assertEqual(resp.status_code, 401, 'unauthenticated, MUST be 401')
+
+    def test_ratelimiting(self):
+        """Test actually being ratelimited."""
+        # bypass auth and make all verifications successful
+        session.post(API_ROOT + '/debug/3')
+        set_session(0)
+        # set up a ratelimit that is easily testable
+        session.post(API_ROOT + '/admin/ratelimits/kenny2scratch',
+                     json={'ratelimit': 2})
+
+        resp = session.put(API_ROOT + '/verify/deathly_hallows')
+        now = int(http2time(resp.headers['Date']))
+        # anything that calls the verify API returns a X-Requests-Remaining
+        # header like left=2, resets=1598514504, to=2
+        self.assertIn('X-Requests-Remaining', resp.headers, 'no custom header')
+        # *starting* verification should not trigger ratelimits
+        self.assertEqual(resp.headers['X-Requests-Remaining'],
+                         HEADER_FORMAT.format(2, now + LIMIT_PER_TIME, 2),
+                         'incorrect header format or values')
+
+        time.sleep(2)
+        # the reset time should always be LIMIT_PER_TIME seconds into the future
+        # up until "left" is less than "to"
+        resp = session.post(API_ROOT + '/verify/deathly_hallows')
+        now = int(http2time(resp.headers['Date']))
+        # the POST API should return it too
+        self.assertIn('X-Requests-Remaining', resp.headers, 'no custom header')
+        # *finishing* verification should decrement "left"
+        self.assertEqual(resp.headers['X-Requests-Remaining'],
+                         HEADER_FORMAT.format(1, now + LIMIT_PER_TIME, 2),
+                         'incorrect header format or values, most likely '
+                         'left is not 1')
+
+        time.sleep(2)
+        resp = session.put(API_ROOT + '/verify/deathly_hallows')
+        # now that left < to, resets should still be LIMIT_PER_TIME after the
+        # "now" that was *before* the last POST, rather than LIMIT_PER_TIME
+        # after *this* "now". Also, this shouldn't decrement "left"
+        self.assertEqual(resp.headers['X-Requests-Remaining'],
+                         HEADER_FORMAT.format(1, now + LIMIT_PER_TIME, 2),
+                         'incorrect header format or values, most likely '
+                         'left is not 1 or resets changed since last request')
+
+        # don't pretend it worked
+        session.post(API_ROOT + '/debug/1')
+        resp = session.post(API_ROOT + '/verify/deathly_hallows')
+        self.assertEqual(resp.status_code, 403, "wait, didn't fail?")
+        # even on failed verification, the API was called
+        self.assertIn('X-Requests-Remaining', resp.headers,
+                      'failed verification should still show ratelimits')
+        # verify once more that "left" is now at 0
+        self.assertEqual(resp.headers['X-Requests-Remaining'],
+                         HEADER_FORMAT.format(0, now + LIMIT_PER_TIME, 2),
+                         'incorrect header format or values, most likely '
+                         'left is not 0 or resets changed since last request')
+
+        # make sure I'm not banned lol
+        #session.delete(API_ROOT + '/admin/bans/kenny2scratch')
+        resp = session.post(API_ROOT + '/users/kenny2scratch/login')
+        # this shouldn't 429 as it doesn't call Scratch
+        self.assertNotEqual(resp.status_code, 429, 'login should not 429')
+        # but it should include the header
+        self.assertIn('X-Requests-Remaining', resp.headers,
+                      'login missing custom header')
+        # get this info for next test
+        resets = re.search('resets=(\d+)', resp.headers['X-Requests-Remaining'])
+        self.assertIsNotNone(resets, 'resets missing from header')
+        resets = int(resets.group(1))
+
+        resp = session.post(API_ROOT + '/users/kenny2scratch/finish-login')
+        now = int(http2time(resp.headers['Date']))
+        # this, however, should 429
+        self.assertEqual(resp.status_code, 429)
+        self.assertIn('Retry-After', resp.headers, '429 missing Retry-After')
+        self.assertEqual(int(resp.headers['Retry-After']),
+                         resets - now, 'wrong retry duration')
 
 test_ban_expiry = int(time.time() + 1e6)
 

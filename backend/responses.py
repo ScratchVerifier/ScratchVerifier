@@ -10,6 +10,7 @@ DEFAULT_LOG_LIMIT = 100 # how many log entries to show if limit is unspecified
 MAX_LOG_LIMIT = 500 # how many /usage logs are allowed to show at once
 DEFAULT_RATELIMIT = 30 # max requests per LIMIT_PER_TIME
 TOKEN_CENSOR_LEN = 8 # how many characters to show in admin-viewed tokens
+HEADER_FORMAT = 'left={}, resets={}, to={}'
 
 DATABASE_FILENAME = 'scratchverifier.db'
 USERS_API = 'https://api.scratch.mit.edu/users/{}'
