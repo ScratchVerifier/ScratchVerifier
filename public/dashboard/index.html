@@ -21,7 +21,7 @@
 			<link rel="stylesheet" type="text/css" href="/site/resources/stylesheet.css">
 			<a href="/site" target="_parent"><img src="/site/resources/favicon.ico" width="64px" height="64px" id="home"></a>
 			<h1 id="t" style="margin-bottom:0px">ScratchVerifier</h1>
-			<a href="/site/login/" class="hbutton smilejs-ripple" target="_parent">Log In/Sign Up</a>
+			<a href="/site/dashboard/" class="hbutton smilejs-ripple" target="_parent">Log In/Sign Up</a>
 			<!--<a href="" class="hbutton" target="_parent">Placeholder</a>-->
 		</div><div class="loading"><br><br><center>
       <svg xmlns="http://www.w3.org/2000/svg" width="38" height="38" viewBox="0 0 38 38" stroke="#000">
@@ -68,7 +68,6 @@
     document.querySelector("#dashboard").style.display = "none"
     document.querySelector(".loading").style.display = ""
     fetch("/session/logout",{method:"POST"}).then(e=>{
-      localStorage.removeItem('token');
       location.reload()
     })
   }
@@ -77,7 +76,6 @@
       document.querySelector("#dashboard").style.display = "none"
       document.querySelector(".loading").style.display = ""
       fetch("/users/" + window.username + "/logout",{method:"POST"}).then(e=>{
-        localStorage.removeItem('token');
         location.reload()
       })
     }
@@ -107,12 +105,11 @@
   }
 window.onload = ()=>{
   document.querySelector(".loading").style.display = ""
-  if (typeof localStorage.getItem("token") !== "string"){
+  if (!document.cookie.includes("session=")){
     location.replace("/site/login")
   } else {
     fetch("/session").then(e=>{
       if (e.status === 401){
-        localStorage.removeItem("token")
         location.replace("/site/login")
       } else if (e.status === 404){
         document.querySelector("#createApp").style.display = ""

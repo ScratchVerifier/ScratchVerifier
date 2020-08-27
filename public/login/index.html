@@ -21,7 +21,7 @@
 			<link rel="stylesheet" type="text/css" href="/site/resources/stylesheet.css">
 			<a href="/site" target="_parent"><img src="/site/resources/favicon.ico" width="64px" height="64px" id="home"></a>
 			<h1 id="t" style="margin-bottom:0px">ScratchVerifier</h1>
-			<a href="/site/login/" class="hbutton smilejs-ripple" target="_parent">Log In/Sign Up</a>
+			<a href="/site/dashboard/" class="hbutton smilejs-ripple" target="_parent">Log In/Sign Up</a>
 			<!--<a href="" class="hbutton" target="_parent">Placeholder</a>-->
 		</div><div class="loading"><br><br><center>
       <svg xmlns="http://www.w3.org/2000/svg" width="38" height="38" viewBox="0 0 38 38" stroke="#000">
@@ -75,6 +75,10 @@ function step1(){
       document.querySelector(".LoginPage_Content_1").style.display = ""
       document.querySelector(".loading").style.display = "none"
 
+    } else if (e.status === 403){
+        document.querySelector("#err1").innerHTML = "This account is temporarily banned from using ScratchVerifier."
+      document.querySelector(".LoginPage_Content_1").style.display = ""
+      document.querySelector(".loading").style.display = "none" 
     } else {
       return e.json()
     }
@@ -103,9 +107,7 @@ function step2(){
     }
   })
 }
-if (localStorage.getItem("token")){
-  location.replace("/site/dashboard")
-}
+
 </script>
     		<div class="LoginPage_Content_1 LoginPage_Content">
 			<img src="/site/resources/ScratchVerifier.png" width="50%">

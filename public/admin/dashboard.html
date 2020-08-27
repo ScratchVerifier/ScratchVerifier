@@ -4,7 +4,7 @@
 		<title>ScratchVerifier Admin</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="shortcut icon" type="image/png" href="/site/resources/favicon.ico">
-        <script src="/resources/admincheck.js"></script>
+        <script src="/site/resources/admincheck.js"></script>
 		<style>
 			* {
 			font-family: sans-serif;	
@@ -116,9 +116,90 @@
 		<div class="content">
 			<div class="lookup">
 				<h3 style="margin-top: 0px;">Lookup Client By UID</h3>
-				<input type="text" placeholder="User ID" class="IDinput">
-				<button class="lookupbutton">Lookup</button>
-			</div>
-		</div>
+				<input type="text" placeholder="User ID" id="IDinput" class="IDinput">
+				<button class="lookupbutton" onclick="lookup()">Lookup</button>
+            </div>
+            <div class="lookup">
+				<h3 style="margin-top: 0px;">Unban Username</h3>
+				<input type="text" placeholder="Username" id="uname" class="IDinput">
+				<button class="lookupbutton" onclick="unban()">Unban</button>
+            </div>
+            <div class="logs">
+                <input type="text" class="logbox" id="a_username" placeholder="Username">
+                <input type="text" class="logbox" id="a_beforeafter" placeholder="Before-After">
+                <input type="text" class="logbox" id="a_startend" placeholder="Start-End">
+                <input type="text" class="logbox" id="a_limit" placeholder="Limit">
+                <button class="fetchbutton" onclick="fetchAudit()">Fetch</button>
+                <br>
+                <br>
+                <table class="logstable">
+                    <tr>
+                        <th>ID</th>
+                        <th>Username</th>
+                        <th>Date</th>
+                        <th>Log Type</th>
+                        <th>Data</th>
+                    </tr>
+                    <div style="display:inherit;margin:0;" id="a_logList"></div>
+                </table>
+            </div>
+        </div>
+        </div>
+        <script>
+            function lookup(){
+                location.replace("/site/admin/user.html?"+document.querySelector("#IDinput").value)
+            }
+        </script>
+            <script>
+                function fromSeconds(secs) {
+                    const date = new Date(secs * 1000)
+                    return date.toTimeString().split(" ")[0] + " " + date.toDateString()
+                }
+                const auditLogElement = document.getElementById("a_logList")
+                const auditMap = {
+                    1: "User Ban",
+                    2: "Rate Limit Update",
+                    3: "User Unban"
+                }
+                function unban(){
+                    fetch("/admin/bans/"+document.getElementById("uname").value,{method:"delete"})
+                }
+                function fetchAudit() {
+                    fetch("/admin/logs")
+                        .then(response => {
+                            if (response.ok) {
+                                return response.json()
+                            } else {
+                                localStorage.setItem("isAdmin", "false")
+                        location.replace("/site/admin/access_denied.html")
+                            }
+                        })
+                        .then(logArray => {
+                            auditLogElement.innerHTML = ""
+                            logArray.forEach(log => {
+                                const parent = document.createElement("td")
+                                const data = Array(5)
+                                for (var i = 0; i < 5; i++) {
+                                    data[i] = document.createElement("td")
+                                }
+                                data[0].innerText = log.id
+                                data[1].innerText = log.performer
+                                data[2].innerText = fromSeconds(log.time)
+                                data[3].innerText = auditMap[log.type]
+                                const dataObj = JSON.parse(log.data)
+                                let dataString = []
+                                Object.keys(dataObj).forEach(key=>{
+                                    dataString.push(key+": "+dataObj[key])
+                                })
+                                data[4].innerText = dataString.join(", ")
+                                data.forEach(a=>{
+                                    parent.appendChild(a)
+                                })
+                                auditLogElement.appendChild(parent)
+                            })
+                        })
+                }
+                
+            </script>
 	</body>
 </html>
