@@ -8,7 +8,7 @@ import hmac
 import asyncio
 import mimetypes
 from aiohttp import web, ClientSession, BasicAuth
-from db import Database, SESSION_EXPIRY
+from db import Database
 from responses import *
 
 class Server:
@@ -59,6 +59,7 @@ class Server:
             web.view('/{path:.*}', self.not_found)
         ])
         self.session = ClientSession()
+        self.ratelimits = {}
         self.db = Database(self.session)
         self.hook_secret = hook_secret.encode()
         self.discord_hook = discord_hook
@@ -89,27 +90,29 @@ class Server:
         except json.JSONDecodeError:
             raise web.HTTPBadRequest() from None
         except Exception as exc:
+            print('Error in', handler.__name__, end='' if self._debug else '\n')
             if self._debug:
+                print(':')
                 print(traceback.format_exc())
-                raise web.HTTPServerError()
-            await self.session.post(self.discord_hook, json={
-                'username': '{}ScratchVerifier Errors'.format(
-                    (self.name + "'s ") if self.name else ''
-                ),
-                'embeds': [{
-                    'color': 0xff0000,
-                    'title': '500 Response Sent',
-                    'fields': [
-                        {'name': 'Request Path',
-                         'value': '`%s %s`' % (request.method, request.path_qs),
-                         'inline': False},
-                        {'name': 'Error traceback',
-                         'value': '```%s```' % traceback.format_exc(),
-                         'inline': False}
-                    ]
-                }]
-            })
-            raise
+            if self.discord_hook:
+                await self.session.post(self.discord_hook, json={
+                    'username': '{}ScratchVerifier Errors'.format(
+                        (self.name + "'s ") if self.name else ''
+                    ),
+                    'embeds': [{
+                        'color': 0xff0000,
+                        'title': '500 Response Sent',
+                        'fields': [
+                            {'name': 'Request Path',
+                             'value': f'`{request.method} {request.path_qs}`',
+                             'inline': False},
+                            {'name': 'Error traceback',
+                             'value': '```{traceback.format_exc()}```',
+                             'inline': False}
+                        ]
+                    }]
+                })
+            raise web.HTTPInternalServerError()
 
     # methods related to running the server
 
@@ -196,6 +199,47 @@ class Server:
             raise web.HTTPBadRequest()
         return username.casefold()
 
+    async def get_ratelimit_header(self, username, err_if_exceeded=True):
+        """Get the ratelimit header for a ratelimited request.
+        If ratelimits have been exceeded, raise 429 if ``err_if_exceeded``.
+
+        ``username``: str - username of owner of client being ratelimited
+        ``err_if_exceeded``: bool - whether to 429 if ratelimits are exceeded
+
+        Returns str: Header value to send to client
+        """
+        row = await self.db.get_ratelimit(username)
+        if row is None:
+            await self.db.set_ratelimits(
+                [{'username': username,
+                  'ratelimit': DEFAULT_RATELIMIT}],
+                None
+            )
+            row = {'ratelimit': DEFAULT_RATELIMIT}
+        # left=(requests left)
+        # resets=(timestamp when it resets to)
+        # to=(this value)
+        to = row['ratelimit']
+        now = int(time.time())
+        left, resets = self.ratelimits.setdefault(
+            username, [to, now + LIMIT_PER_TIME])
+        if resets <= now:
+            self.ratelimits[username] = [to, now + LIMIT_PER_TIME]
+            left, resets = self.ratelimits[username]
+        if left == to:
+            self.ratelimits[username][1] = now + LIMIT_PER_TIME
+            resets = self.ratelimits[username][1]
+        if err_if_exceeded:
+            if self.ratelimits[username][0] <= 0:
+                resp = web.HTTPTooManyRequests()
+                resp.headers.add('Retry-After',
+                                 str(self.ratelimits[username][1] - now))
+                raise resp
+            self.ratelimits[username][0] -= 1
+            left = self.ratelimits[username][0]
+        value = HEADER_FORMAT.format(left, resets, to)
+        return value
+
     # the business part of the API
 
     async def verify(self, request):
@@ -203,9 +247,14 @@ class Server:
         client_id = await self.check_token(request)
         username = await self.check_username(request)
         code = await self.db.start_verification(client_id, username)
-        return web.json_response(Verification(
+        response = web.json_response(Verification(
             code=code, username=username
         ).d())
+        # get ratelimits but don't trigger them
+        client_owner = (await self.db.get_client_info(client_id))['username']
+        value = await self.get_ratelimit_header(client_owner, False)
+        response.headers.add('X-Requests-Remaining', value)
+        return response
 
     async def _verified(self, client_id, username):
         """Handle the logic of actually verifying the user.
@@ -249,17 +298,27 @@ class Server:
         """POST /verify/{username}"""
         client_id = await self.check_token(request)
         username = await self.check_username(request)
-        if await self._verified(client_id, username):
-            raise web.HTTPNoContent()
-        else:
-            raise web.HTTPForbidden()
+        client_owner = (await self.db.get_client_info(client_id))['username']
+        value = await self.get_ratelimit_header(client_owner)
+        try:
+            if await self._verified(client_id, username):
+                raise web.HTTPNoContent()
+            else:
+                raise web.HTTPForbidden()
+        except web.HTTPException as exc:
+            exc.headers.add('X-Requests-Remaining', value)
+            raise
 
     async def unverify(self, request):
         """DELETE /verify/{username}"""
         client_id = await self.check_token(request)
         username = await self.check_username(request)
         await self.db.end_verification(client_id, username, -1)
-        raise web.HTTPNoContent()
+        client_owner = (await self.db.get_client_info(client_id))['username']
+        value = await self.get_ratelimit_header(client_owner, False)
+        response = web.HTTPNoContent()
+        response.headers.add('X-Requests-Remaining', value)
+        raise response
 
     # logging in to the website
 
@@ -269,22 +328,29 @@ class Server:
         if (await self.db.get_ban(username)) is not None:
             raise web.HTTPForbidden()
         code = await self.db.start_verification(0, username)
-        return web.json_response(Verification(
+        value = await self.get_ratelimit_header(username, False)
+        response = web.json_response(Verification(
             code=code, username=username
         ).d())
+        response.headers.add('X-Requests-Remaining', value)
+        return response
 
     async def finish_login(self, request):
         """POST /users/{username}/finish-login"""
         username = await self.check_username(request)
+        value = await self.get_ratelimit_header(username)
         if await self._verified(0, username):
             response = web.json_response(Admin(
                 admin=username in self.admins
             ).d())
             response.set_cookie('session', await self.db.new_session(username),
                                 max_age=SESSION_EXPIRY)
+            response.headers.add('X-Requests-Remaining', value)
             return response
         else:
-            raise web.HTTPUnauthorized()
+            response = web.HTTPUnauthorized()
+            response.headers.add('X-Requests-Remaining', value)
+            raise response
 
     async def logout_user(self, request):
         """POST /users/{username}/logout"""
@@ -453,6 +519,10 @@ class Server:
                 and USERNAME_REGEX.match(i['username'])
                 and isinstance(i.get('ratelimit', None), int)
                 and i['ratelimit'] > 0]
+        for i in data:
+            if i['username'] in self.ratelimits:
+                # reset ratelimit tracking once limits change
+                del self.ratelimits[data['username']]
         await self.db.set_ratelimits(data, performer)
         raise web.HTTPNoContent()
 
@@ -464,6 +534,9 @@ class Server:
         if not isinstance(data.get('ratelimit', None), int) \
            or data['ratelimit'] <= 0:
             raise web.HTTPBadRequest()
+        if username in self.ratelimits:
+            # reset ratelimit tracking once limits change
+            del self.ratelimits[username]
         await self.db.set_ratelimits(
             [{'username': username,
               'ratelimit': data['ratelimit']}],

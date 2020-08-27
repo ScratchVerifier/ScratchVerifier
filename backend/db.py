@@ -265,17 +265,18 @@ WHERE username=?', (username,))
         await self.db.executemany('INSERT OR REPLACE INTO \
 scratchverifier_ratelimits (username, ratelimit) \
 VALUES (:username, :ratelimit)', data)
-        await self.db.executemany(
-            'INSERT INTO scratchverifier_auditlogs \
-(username, time, type, data) VALUES \
-(:username, :time, :type, :data)',
-            ({
-                'username': performer,
-                'time': int(time.time()),
-                'type': 2, # ratelimit update
-                'data': json.dumps(i)
-            } for i in data)
-        )
+        if performer is not None:
+            await self.db.executemany(
+                'INSERT INTO scratchverifier_auditlogs \
+    (username, time, type, data) VALUES \
+    (:username, :time, :type, :data)',
+                ({
+                    'username': performer,
+                    'time': int(time.time()),
+                    'type': 2, # ratelimit update
+                    'data': json.dumps(i)
+                } for i in data)
+            )
 
     ### TABLE: bans ###
 
