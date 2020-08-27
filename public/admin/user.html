@@ -95,7 +95,7 @@
         <br>
         <div class="lock">
             <h3 class="subtitle">Ban User</h3>
-            <input type="number" placeholder="Ban Time (minutes) (0 = permanent)" id="bantime" class="input">
+            <input type="number" placeholder="Ban Time (minutes) (none = permanent)" id="bantime" class="input">
             <button class="button" id="set" onclick="ban()">Ban</button>
         </div>
         <br>
@@ -133,7 +133,7 @@
             fetch("/admin/bans/" + gData.username, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ "expiry": Math.round((Date.now() / 1000) + 1) }) })
         }
         function ban() {
-            if (document.getElementById("bantime").value == "0"){
+            if (document.getElementById("bantime").value == ""){
                 fetch("/admin/bans/" + gData.username, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ "expiry": null }) })
 
                 return

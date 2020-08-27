@@ -7,6 +7,7 @@
 <script>
     window.onload = ()=>{
         function fromSeconds(secs) {
+            if (secs === null) return "permanent"
                     const date = new Date(secs * 1000)
                     return date.toTimeString().split(" ")[0] + " " + date.toDateString()
         }

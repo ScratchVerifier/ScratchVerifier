@@ -126,7 +126,8 @@
         <div class="lookup">
             <h3 style="margin-top: 0px;">(Un)ban Username</h3>
             <input type="text" placeholder="Username" id="uname" class="IDinput"><br><br>
-            <input type="text" placeholder="Time (minutes, 0 = infinite, only for bans)" id="bantime" class="IDinput">
+            <input type="text" placeholder="Time (minutes, none = permanent, only for bans)" id="bantime"
+                class="IDinput">
             <button class="lookupbutton" onclick="unban()">Unban</button>
             <button class="lookupbutton" onclick="ban()">Ban</button>
 
@@ -179,7 +180,7 @@
             fetch("/admin/bans/" + document.getElementById("uname").value, { method: "delete" })
         }
         function ban() {
-            if (document.getElementById("bantime").value == "0") {
+            if (document.getElementById("bantime").value === "") {
                 fetch("/admin/bans/" + document.getElementById("uname").value, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ "expiry": null }) })
                 return
             }
@@ -187,18 +188,18 @@
 
         }
         function fetchAudit() {
-            function getVal(id){return document.getElementById(id).value}
+            function getVal(id) { return document.getElementById(id).value }
             var query = []
-            if (getVal("a_username")) query.push("username="+getVal("a_username"))
-            if (getVal("a_startend")) query.push("start="+getVal("a_startend"))
+            if (getVal("a_username")) query.push("username=" + getVal("a_username"))
+            if (getVal("a_startend")) query.push("start=" + getVal("a_startend"))
 
-            if (getVal("a_limit")) query.push("limit="+getVal("a_limit"))
+            if (getVal("a_limit")) query.push("limit=" + getVal("a_limit"))
             var opt = document.querySelector("select#a_type")
             var val = opt.options[opt.selectedIndex].getAttribute("data-value")
-            if (val !== "0"){
-                query.push("type="+val)
+            if (val !== "0") {
+                query.push("type=" + val)
             }
-            fetch("/admin/logs?"+query.join("&"))
+            fetch("/admin/logs?" + query.join("&"))
                 .then(response => {
                     if (response.ok) {
                         return response.json()
@@ -218,9 +219,13 @@
                         data[3].innerText = auditMap[log.type]
                         const dataObj = JSON.parse(log.data)
                         let dataString = []
-                        Object.keys(dataObj).forEach(key => {
-                            dataString.push(key + ": " + dataObj[key])
-                        })
+                        if(typeof data === "object"){
+                            Object.keys(dataObj).forEach(key => {
+                                dataString.push(key + ": " + dataObj[key])
+                            })
+                        } else {
+                            dataString.push(dataObj.toString())
+                        }
                         data[4].innerText = dataString.join(", ")
                         data.forEach(a => {
                             parent.appendChild(a)
