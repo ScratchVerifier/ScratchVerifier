@@ -95,7 +95,7 @@
         <br>
         <div class="lock">
             <h3 class="subtitle">Ban User</h3>
-            <input type="number" placeholder="Ban Time (minutes)" id="bantime" class="input">
+            <input type="number" placeholder="Ban Time (minutes) (0 = permanent)" id="bantime" class="input">
             <button class="button" id="set" onclick="ban()">Ban</button>
         </div>
         <br>
@@ -133,6 +133,11 @@
             fetch("/admin/bans/" + gData.username, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ "expiry": Math.round((Date.now() / 1000) + 1) }) })
         }
         function ban() {
+            if (document.getElementById("bantime").value == "0"){
+                fetch("/admin/bans/" + gData.username, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ "expiry": null }) })
+
+                return
+            }
             fetch("/admin/bans/" + gData.username, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ "expiry": Math.round((Date.now() / 1000) + (60 * (+document.getElementById("bantime").value))) }) })
         }
         function setRatelimit() {
@@ -169,7 +174,9 @@
                 console.error('Async: Could not copy text: ', err);
             });
         }
-    </script>
+    </script><br><br>
+        <a href="/site/admin/dashboard.html">Return to Dashboard</a>
+
 </body>
 
 </html>

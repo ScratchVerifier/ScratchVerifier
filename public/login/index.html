@@ -87,6 +87,7 @@ function step1(){
       document.querySelector(".LoginPage_Content_2").style.display = ""
       document.querySelector(".loading").style.display = "none"
       document.getElementById("code").value = data.code
+      document.getElementById("copyAndOpen").setAttribute("href",`https://scratch.mit.edu/users/${document.getElementById("Username").value}/`)
     }
   })
 }
@@ -135,6 +136,7 @@ function step2(){
       <button type="submit" class="smilejs-ripple submit">Continue</button>
     </form><br>
     <button onclick="copyTextToClipboard(document.querySelector('#code').value)" class="smilejs-ripple submit">Copy code</button>
+    <a target="_new" id="copyAndOpen" onclick="copyTextToClipboard(document.querySelector('#code').value)" class="smilejs-ripple submit">Copy & Open</a>
 
   </div>
 </div>
