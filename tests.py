@@ -762,7 +762,8 @@ class TestAuditLogging(unittest.TestCase):
         # match entries with previous actions
         self.assertEqual(resp[0]['type'], 3, 'last log was not an unban')
         self.assertEqual(resp[0]['username'], 'kenny2scratch', 'wrong name')
-        self.assertEqual(resp[0]['data'], '"yetanother"', 'not target name')
+        self.assertEqual(resp[0]['data'], '{"username": "yetanother"}',
+                         'not target name')
         self.assertEqual(resp[1]['type'], 1, '2nd-last log was not a ban')
         self.assertEqual(resp[2]['type'], 2, '3rd-last log was not dRL')
 
