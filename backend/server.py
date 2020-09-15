@@ -107,7 +107,7 @@ class Server:
                              'value': f'`{request.method} {request.path_qs}`',
                              'inline': False},
                             {'name': 'Error traceback',
-                             'value': '```{traceback.format_exc()}```',
+                             'value': f'```{traceback.format_exc()}```',
                              'inline': False}
                         ]
                     }]
