@@ -115,11 +115,11 @@
                 .then(response => {
                     if (response.ok) {
                         return response.json()
-                    } else if (response.status === 404) {
-                        location.replace("/site/admin/dashboard.html")
-                    } else {
+                    } else if (response.status === 401) {
                         localStorage.setItem("isAdmin", "false")
                         location.replace("/site/admin/access_denied.html")
+                    } else {
+                        location.replace("/site/admin/dashboard.html")
                     }
                 })
                 .then(data => {
