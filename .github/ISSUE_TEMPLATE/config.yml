@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Official Site
+    url: https://scratchverifier.ddns.net/
+    about: You may sign up for the API or view the website here.
+  - name: API Documentation
+    url: https://scratchverifier.ddns.net/docs
+    about: API documentation for ScratchVerifier.
