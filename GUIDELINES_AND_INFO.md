@@ -17,13 +17,13 @@ The following behaviour is discouraged:
 - PRs which require modules or code from a private project: We are trying to make this a self-hostable application. Any PR making this project non-self hostable will be rejected. Also, we are self hosting and checks require the service to be able to be started with a clean slate, if possible with nearly no effort.
 
 The following behaviour is prohibited:
-- Spam and advertisements: Please do not advertise in our repository. You may link to other sites to demonstrate features you would want or examples. You will get warned, then you will be blocked if you have too many offenses or the spam you have posted is severe enough.
+- Spam and advertisements: Please do not advertise in our repository. You may link to other sites for the sole purpose of providing context to issues, or our Discord only to continue a discussion.
 
 Recommendations:
 - You might want to check the issue templates so we can understand your issue easier and fix it or add it.
 - Please consider how your PR may affect how self hosting works. Any major changes might be rejected.
-- Please include tests for your PR if it is a feature proposal, we will not write tests for all PRs. If we think a PR is kinda acceptable (can do without it), we may not accept it without tests.
-- Please keep the original style in the code, such as how tests work, authentication works or the database schema. If a database schema change is required we will try to accept it but no guarantees.
+- Please include tests for your PR if it is a feature proposal; otherwise, we don't necessarily require tests. Note that there will some exceptions where we don't require tests, we will tell you if that is the case.
+- Please keep the original style in the code, such as how tests work, authentication works or the database schema. If a database schema change is required, try creating its own table if its an entirely different feature, or include plans to migrate the data. Some SQL script is fine, and it should be included in a folder
 - If your PR addresses an issue or issues, please link it.
  
 ## Who to assign/tag for an issue:
