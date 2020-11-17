@@ -22,8 +22,8 @@ The following behaviour is prohibited:
 Recommendations:
 - You might want to check the issue templates so we can understand your issue easier and fix it or add it.
 - Please consider how your PR may affect how self hosting works. Any major changes might be rejected.
-- Please include tests for your PR if it is a feature proposal; otherwise, we don't necessarily require tests. Note that there will some exceptions where we don't require tests, we will tell you if that is the case.
-- Please keep the original style in the code, such as how tests work, authentication works or the database schema. If a database schema change is required, try creating its own table if its an entirely different feature, or include plans to migrate the data. Some SQL script is fine, and it should be included in a folder
+- Please include tests for your PR if it is a feature proposal; otherwise, we don't necessarily require tests. Note that there are some exceptions where we don't require tests; we will tell you if that is the case.
+- Please keep the original style in the code, such as how tests work, authentication works or the database schema. If a database schema change is required, try to ensure that the changes only involve creating new tables if the feature is entirely new, or include plans to migrate the data, which can be expressed in SQL form.
 - If your PR addresses an issue or issues, please link it.
  
 ## Who to assign/tag for an issue:
