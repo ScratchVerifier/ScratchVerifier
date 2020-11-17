@@ -26,3 +26,9 @@ Recommendations:
 - Please keep the original style in the code, such as how tests work, authentication works or the database schema. If a database schema change is required we will try to accept it but no guarantees.
 - If your PR addresses an issue or issues, please link it.
  
+## Who to assign/tag for an issue:
+|Type            |User                 |
+|----------------|---------------------|
+|Design/Frontend |Semisol, Accio1      |
+|Backend         |Kenny2github, Semisol|
+|Docs            |Kenny2github         |
