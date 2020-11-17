@@ -6,3 +6,6 @@ contact_links:
   - name: API Documentation
     url: https://scratchverifier.ddns.net/docs
     about: API documentation for ScratchVerifier.
+  - name: Guidelines and Information
+    url: https://github.com/ScratchVerifier/ScratchVerifier/blob/develop/GUIDELINES_AND_INFO.md
+    about: Please read these guidelines before posting an issue.
