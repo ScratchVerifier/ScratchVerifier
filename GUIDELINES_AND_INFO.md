@@ -16,7 +16,7 @@ The following behaviour is discouraged:
 - PRs with nearly no effort: We want to make quality code, so please submit a PR that has work in it. Copying code is fine, (everyone does that) but we will not accept any changes which do not provide any benefit to the project or its users. Also, please explain what your PR includes so we can review it and prevent confusions.
 - PRs which require modules or code from a private project: We are trying to make this a self-hostable application. Any PR making this project non-self hostable will be rejected. Also, we are self hosting and checks require the service to be able to be started with a clean slate, if possible with nearly no effort.
 
-The following behaviour is not allowed:
+The following behaviour is prohibited:
 - Spam and advertisements: Please do not advertise in our repository. You may link to other sites to demonstrate features you would want or examples. You will get warned, then you will be blocked if you have too many offenses or the spam you have posted is severe enough.
 
 Recommendations:
@@ -24,5 +24,5 @@ Recommendations:
 - Please consider how your PR may affect how self hosting works. Any major changes might be rejected.
 - Please include tests for your PR if it is a feature proposal, we will not write tests for all PRs. If we think a PR is kinda acceptable (can do without it), we may not accept it without tests.
 - Please keep the original style in the code, such as how tests work, authentication works or the database schema. If a database schema change is required we will try to accept it but no guarantees.
-- If possible, if your PR addresses an issue or issues, please link it.
+- If your PR addresses an issue or issues, please link it.
  
