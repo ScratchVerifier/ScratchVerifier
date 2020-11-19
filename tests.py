@@ -36,7 +36,7 @@ class TestApi(unittest.TestCase):
         # without finishing verification, the code should be cached
         code = resp['code']
         resp = session.put(API_ROOT + '/verify/kenny2scratch').json()
-        self.assertEqual(resp['code'], code, 'same PUT but not same code')
+        self.assertNotEqual(resp['code'], code, 'same PUT and same code')
 
         # regex-invalid names 400
         resp = session.put(API_ROOT + '/verify/Impossible Username')
