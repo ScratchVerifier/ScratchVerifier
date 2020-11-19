@@ -162,11 +162,6 @@ WHERE username=?', (username,))
             await self.db.execute('SELECT code FROM scratchverifier_usage WHERE \
 client_id=? AND username=?', (client_id, username))
             row = await self.db.fetchone()
-        if row is not None:
-            await self.db.execute('UPDATE scratchverifier_usage SET expiry=? \
-WHERE client_id=? AND username=? AND code=?', (int(time.time()) + VERIFY_EXPIRY,
-                                               client_id, username, row[0]))
-            return row[0]
         code = sha256(
             str(client_id).encode()
             + str(time.time()).encode()
@@ -174,6 +169,12 @@ WHERE client_id=? AND username=? AND code=?', (int(time.time()) + VERIFY_EXPIRY,
             + token_bytes()
         # 0->A, 1->B, etc, to avoid Scratch's phone number censor
         ).hexdigest().translate({ord('0') + i: ord('A') + i for i in range(10)})
+        if row is not None:
+            await self.db.execute(
+                'UPDATE scratchverifier_usage SET expiry=?, code=? \
+WHERE client_id=? AND username=?', (int(time.time()) + VERIFY_EXPIRY,
+                                    code, client_id, username))
+            return code
         await self.db.execute('INSERT INTO scratchverifier_usage (client_id, \
 code, username, expiry) VALUES (?, ?, ?, ?)', (client_id, code, username,
                                int(time.time() + VERIFY_EXPIRY)))

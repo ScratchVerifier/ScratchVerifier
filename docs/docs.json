@@ -59,7 +59,7 @@
     {
       "type": "endpoint",
       "name": "Start/Renew Verification",
-      "desc": "Request a new verification code for a user. Only one code per user per client - if this endpoint is used again before the <a href=\"#finish-verification-endpoint\">Finish Verification</a> endpoint is used, this will instead renew the 30-minute expiry on the code and return the original code.",
+      "desc": "Request a new verification code for a user. Only one code per user per client - if this endpoint is used again before the <a href=\"#finish-verification-endpoint\">Finish Verification</a> endpoint is used, this will generate a new code and reset the 30-minute expiry, returning the new code instead.",
       "method": "PUT",
       "path": "/verify/{username}",
       "params": {

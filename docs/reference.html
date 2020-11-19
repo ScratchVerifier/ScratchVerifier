@@ -21,7 +21,7 @@
 <h2 id="api-endpoints">API Endpoints</h2>
 <p>The simplicity of this API is such that there are only three total endpoints for its ultimate purpose.</p>
 <h3 id="start/renew-verification-endpoint">Start/Renew Verification Endpoint</h3>
-<p>Request a new verification code for a user. Only one code per user per client - if this endpoint is used again before the <a href="#finish-verification-endpoint">Finish Verification</a> endpoint is used, this will instead renew the 30-minute expiry on the code and return the original code.</p>
+<p>Request a new verification code for a user. Only one code per user per client - if this endpoint is used again before the <a href="#finish-verification-endpoint">Finish Verification</a> endpoint is used, this will generate a new code and reset the 30-minute expiry, returning the new code instead.</p>
 <div class="endpoint">
 <div class="method-path auth-needed" onclick="showOrHide(this)"><span class="method">PUT</span> <code>/verify/<span class="param">{username}</span></code> <a href="#authorization"><img src="https://image.flaticon.com/icons/png/512/61/61457.png" title="Authorization necessary" /></a></div>
 <div style="display: none">
