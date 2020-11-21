@@ -110,6 +110,13 @@ class Server:
                              'value': f'```{traceback.format_exc()}```',
                              'inline': False}
                         ]
+                    }, {
+                        'color': 0xff0000,
+                        'title': 'Headers',
+                        'fields': [{'name': k,
+                                    'value': f'`{v}`',
+                                    'inline': True}
+                                   for k, v in request.headers.items()]
                     }]
                 })
             raise web.HTTPInternalServerError()
@@ -487,7 +494,7 @@ class Server:
         try:
             client_id = int(client_id)
         except ValueError:
-            if badifnot:
+            if badifinvalid:
                 raise web.HTTPBadRequest() from None
             raise web.HTTPNotFound() from None
         return client_id
