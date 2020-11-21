@@ -101,7 +101,7 @@ WHERE client_id=?', (client_id,))
             return None
         await self.db.execute('UPDATE scratchverifier_clients SET token=? \
 WHERE username=?', (token_hex(32), username))
-        return self.get_client(session_id)
+        return await self.get_client(session_id)
 
     async def del_client(self, session_id):
         if session_id == 0: # 0 means debug mode
